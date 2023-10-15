@@ -28,9 +28,9 @@ class NotificationsFragment : Fragment() {
         _binding = FragmentNotificationsBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textNotifications
+        val textView: TextView = binding.textInfo
         notificationsViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+            textView.text = "Placeholder text for Info Fragment"
         }
         return root
     }
