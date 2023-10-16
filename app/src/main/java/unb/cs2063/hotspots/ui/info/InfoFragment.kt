@@ -1,4 +1,4 @@
-package unb.cs2063.hotspots.ui.notifications
+package unb.cs2063.hotspots.ui.info
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,11 +7,11 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import unb.cs2063.hotspots.databinding.FragmentNotificationsBinding
+import unb.cs2063.hotspots.databinding.FragmentInfoBinding
 
-class NotificationsFragment : Fragment() {
+class InfoFragment : Fragment() {
 
-    private var _binding: FragmentNotificationsBinding? = null
+    private var _binding: FragmentInfoBinding? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -22,14 +22,14 @@ class NotificationsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val notificationsViewModel =
-            ViewModelProvider(this).get(NotificationsViewModel::class.java)
+        val infoViewModel =
+            ViewModelProvider(this).get(InfoViewModel::class.java)
 
-        _binding = FragmentNotificationsBinding.inflate(inflater, container, false)
+        _binding = FragmentInfoBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
         val textView: TextView = binding.textInfo
-        notificationsViewModel.text.observe(viewLifecycleOwner) {
+        infoViewModel.text.observe(viewLifecycleOwner) {
             textView.text = "Placeholder text for Info Fragment"
         }
         return root

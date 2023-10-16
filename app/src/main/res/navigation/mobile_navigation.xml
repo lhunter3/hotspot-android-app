@@ -7,19 +7,19 @@
 
     <fragment
         android:id="@+id/navigation_camera"
-        android:name="unb.cs2063.hotspots.ui.home.HomeFragment"
+        android:name="unb.cs2063.hotspots.ui.camera.CameraFragment"
         android:label="@string/title_camera"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_camera" />
 
     <fragment
         android:id="@+id/navigation_map"
-        android:name="unb.cs2063.hotspots.ui.dashboard.DashboardFragment"
+        android:name="unb.cs2063.hotspots.ui.map.MapFragment"
         android:label="@string/title_map"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/fragment_map" />
 
     <fragment
         android:id="@+id/navigation_info"
-        android:name="unb.cs2063.hotspots.ui.notifications.NotificationsFragment"
+        android:name="unb.cs2063.hotspots.ui.info.InfoFragment"
         android:label="@string/title_info"
-        tools:layout="@layout/fragment_notifications" />
+        tools:layout="@layout/fragment_info" />
 </navigation>
