@@ -2,15 +2,18 @@
     <!-- Base application theme. -->
     <style name="Theme.Hotspots" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">#BC6C25</item>
-        <item name="colorPrimaryVariant">#DDA15E</item>
-        <item name="colorOnPrimary">#FEFAE0</item>
+        <item name="colorPrimary">#353535</item>
+        <item name="colorPrimaryVariant">#284b63</item>
+        <item name="colorOnPrimary">#ffffff</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">#DDA15E</item>
-        <item name="colorSecondaryVariant">#BC6C25</item>
-        <item name="colorOnSecondary">@color/black</item>
+        <item name="colorSecondary">#284b63</item>
+        <item name="colorSecondaryVariant">#3c6e71</item>
+        <item name="colorOnSecondary">#d9d9d9</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
+
     </style>
+
+
 </resources>
