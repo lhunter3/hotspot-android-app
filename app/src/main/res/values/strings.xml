@@ -2,9 +2,9 @@
     <string name="app_name">HotSpots</string>
     <string name="title_camera">Share</string>
     <string name="title_map">Map</string>
-    <string name="title_info">Info</string>
+    <string name="title_info">Frequently Asked Questions</string>
     <string name="api_key">AIzaSyAJ0T91sNm5X6oqTGiKxMWVeZ-oBv3SQEw</string>
-    <string name="contact_us_title">Did not find what you\'re looking for?</string>
+    <string name="contact_us_title">Didn\'t find what you\'re looking for?</string>
     <string name="btn_contact_us">Contact Us</string>
     <string name="contact_email">support@hotspots.com</string>
     <string name="contact_subject">I Need Help</string>

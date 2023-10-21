@@ -1,0 +1,37 @@
+{
+  "QUESTIONS": [
+    {
+      "TITLE": "What is your app, and how does it work?",
+      "DESCRIPTION" : "Our app is a location-based event recommendation platform that uses publicly shared pictures stored on a heatmap to suggest the best events in your area. It analyzes photos to identify popular places. Data will be reset every 24 hours to ensure that the information is current. "
+    },
+    {
+      "TITLE": "How do I get started with your app?",
+      "DESCRIPTION" : "To get started, simply download and install the app from the Google Play Store. Open the app, allow location access, and explore the events recommended in your area."
+    },
+    {
+      "TITLE": "Can I contribute to the heatmap?",
+      "DESCRIPTION" : "Yes, you can! We encourage users to share photos of events and places they visit. This helps enhance the accuracy of our recommendations."
+    },
+    {
+      "TITLE": "How frequently are the recommendations updated?",
+      "DESCRIPTION" : "The recommendations are updated in real-time. As new photos are shared and analyzed, the heatmap adapts to reflect current events and popular locations."
+    },
+    {
+      "TITLE": "I'm not seeing any recommendations. What should I do?",
+      "DESCRIPTION" : "Ensure that you have granted location access to the app. Make sure your GPS is enabled, and you're in an area with sufficient user activity for recommendations to be generated."
+    },
+    {
+      "TITLE": "What happens to the photos I share in the app?",
+      "DESCRIPTION" : "We store and share publicly posted user photos. The shared information is used by our algorithms to recommend popular events, aswell as providing live insight to other users."
+    },
+    {
+      "TITLE": "How is user data protected in your app?",
+      "DESCRIPTION" : "User data privacy and security are paramount to us. We use encryption and follow best practices to safeguard your data."
+    },
+    {
+      "TITLE": "How do I get started with your app?",
+      "DESCRIPTION" : "To get started, simply download and install the app from the Google Play Store. Open the app, allow location access, and explore the events recommended in your area."
+    }
+
+  ]
+}
