@@ -9,5 +9,5 @@ class Question(private val title: String?, private val description: String?){
     val Description: String
         get() = "$description"
     val Title: String
-        get() = "$description"
+        get() = "$title"
 }

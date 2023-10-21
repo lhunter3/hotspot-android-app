@@ -11,15 +11,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import unb.cs2063.hotspots.R
 import unb.cs2063.hotspots.databinding.FragmentInfoBinding
 import unb.cs2063.hotspots.utils.JsonUtils
-import unb.cs2063.hotspots.utils.LoadDataTask
 
 
 class InfoFragment : Fragment() {
 
 
     private val TAG = "InfoFragment"
-
-
 
     private var binding: FragmentInfoBinding? = null
     private val Binding get() = binding!!
@@ -35,18 +32,10 @@ class InfoFragment : Fragment() {
         binding = FragmentInfoBinding.inflate(inflater, container, false)
         val root: View = Binding.root
 
-        /*
-
-        //dataTask.execute()
-        setup recyclerView
-        Binding.recycler.layoutManager = LinearLayoutManager(activity)
-        println(uti.getQuestions().toString())
-        //Binding.recyclerView.adapter = RecyclerAdapter(requireActivity(),uti.getQuestions())
-
-
-        */
-
-
+        //setup recyclerView
+        val json = JsonUtils(requireContext())
+        Binding.recyclerView.layoutManager = LinearLayoutManager(activity)
+        Binding.recyclerView.adapter = RecyclerAdapter(requireActivity(),json.getQuestions())
 
 
         //Contact Button
@@ -80,6 +69,8 @@ class InfoFragment : Fragment() {
         super.onDestroyView()
         binding = null
     }
+
+
 
 }
 

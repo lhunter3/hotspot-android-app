@@ -6,11 +6,8 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import unb.cs2063.hotspots.databinding.ActivityMainBinding
-import unb.cs2063.hotspots.utils.LoadDataTask
 
 class MainActivity : AppCompatActivity(){
 
@@ -27,8 +24,6 @@ class MainActivity : AppCompatActivity(){
         val appBarConfiguration = AppBarConfiguration(setOf(R.id.navigation_camera, R.id.navigation_map, R.id.navigation_info))
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-
-
 
 
 
