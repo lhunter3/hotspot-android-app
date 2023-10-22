@@ -7,6 +7,7 @@ import android.app.Activity
 import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
@@ -22,10 +23,12 @@ import android.view.animation.RotateAnimation
 import android.widget.ProgressBar
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import unb.cs2063.hotspots.R
+import unb.cs2063.hotspots.R.*
 import unb.cs2063.hotspots.databinding.FragmentCameraBinding
 import kotlin.random.Random
 
@@ -65,6 +68,7 @@ class CameraFragment : Fragment() {
         //Publish image to firebase... animations, change to map once complete
         Binding.publish.setOnClickListener{
             Binding.publish.isClickable = false
+            Binding.publish.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.button_disabled))
             Binding.progressBar.startAnimation(setupAnimations())
         }
 
@@ -84,7 +88,7 @@ class CameraFragment : Fragment() {
     private fun dispatchTakePictureIntent() {
         val contentValues = ContentValues()
         contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, "image.jpg")
+        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, "images.jpg")
 
         val resolver: ContentResolver = requireContext().contentResolver
         capturedImageUri =
