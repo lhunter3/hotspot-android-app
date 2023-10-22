@@ -23,6 +23,7 @@ import android.widget.ProgressBar
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import unb.cs2063.hotspots.R
 import unb.cs2063.hotspots.databinding.FragmentCameraBinding
@@ -35,37 +36,40 @@ class CameraFragment : Fragment() {
 
     private lateinit var cameraLauncher : ActivityResultLauncher<Intent>
     private lateinit var capturedImageUri: Uri
+    private lateinit var  navController: NavController
 
     private var binding: FragmentCameraBinding? = null
     private val Binding get() = binding!!
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentCameraBinding.inflate(inflater, container, false)
-
+        navController = requireActivity().findNavController(R.id.nav_host_fragment_activity_main)
         val root: View = Binding.root
 
-        //making bg and buttons invisible for cameraloading
+        //init setup
         Binding.cameraLayout.setBackgroundColor(Color.parseColor("#000000"))
         Binding.publish.visibility = View.INVISIBLE
 
-
-        //waiting for camera response... displays image to screen
+        //for camera response... displays image to screen
         cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 Binding.imageView.setImageURI(capturedImageUri)
                 Binding.cameraLayout.setBackgroundColor(Color.WHITE)
                 Binding.publish.visibility = View.VISIBLE
             }
+            else if(result.resultCode == Activity.RESULT_CANCELED){
+                navController.navigate(R.id.navigation_map)
+            }
         }
 
-        //Publish image to firebase...
+        //Publish image to firebase... animations, change to map once complete
         Binding.publish.setOnClickListener{
             Binding.publish.isClickable = false
             Binding.progressBar.startAnimation(setupAnimations())
         }
 
+        //Load Camera
         dispatchTakePictureIntent()
-
 
         return root
     }
@@ -144,7 +148,6 @@ class CameraFragment : Fragment() {
                 Binding.publish.visibility = View.INVISIBLE
             }
             override fun onAnimationEnd(animation: Animator) {
-                val navController = requireActivity().findNavController(R.id.nav_host_fragment_activity_main)
                 navController.navigate(R.id.navigation_map)
             }
             override fun onAnimationCancel(animation: Animator) {}
