@@ -23,6 +23,7 @@ import android.widget.ProgressBar
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import unb.cs2063.hotspots.R
 import unb.cs2063.hotspots.databinding.FragmentCameraBinding
 import kotlin.random.Random
@@ -44,7 +45,7 @@ class CameraFragment : Fragment() {
         val root: View = Binding.root
 
         //making bg and buttons invisible for cameraloading
-        Binding.cameraLayout.setBackgroundColor(Color.parseColor("#353535"))
+        Binding.cameraLayout.setBackgroundColor(Color.parseColor("#000000"))
         Binding.publish.visibility = View.INVISIBLE
 
 
@@ -52,7 +53,6 @@ class CameraFragment : Fragment() {
         cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 Binding.imageView.setImageURI(capturedImageUri)
-
                 Binding.cameraLayout.setBackgroundColor(Color.WHITE)
                 Binding.publish.visibility = View.VISIBLE
             }
@@ -80,7 +80,7 @@ class CameraFragment : Fragment() {
     private fun dispatchTakePictureIntent() {
         val contentValues = ContentValues()
         contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, "test.jpg")
+        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, "image.jpg")
 
         val resolver: ContentResolver = requireContext().contentResolver
         capturedImageUri =
@@ -95,6 +95,7 @@ class CameraFragment : Fragment() {
     }
 
 
+    //Does animations. Changes to Map page.
     private fun setupAnimations(): RotateAnimation{
         val rotateAnimation = RotateAnimation(0f, 360f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
         rotateAnimation.interpolator = LinearInterpolator()
@@ -111,6 +112,7 @@ class CameraFragment : Fragment() {
                 Binding.progressBar.clearAnimation()
                 Binding.progressBar.visibility = View.INVISIBLE
                 foldImageToCorner(Binding.imageView)
+
             }
 
             override fun onAnimationRepeat(animation: Animation?) {
@@ -134,16 +136,16 @@ class CameraFragment : Fragment() {
         // Combine animations
         animatorSet.playTogether(scaleXAnimator, scaleYAnimator, translationXAnimator, translationYAnimator)
         animatorSet.interpolator = DecelerateInterpolator()
-        animatorSet.duration = 500 // Set the animation duration in milliseconds
+        animatorSet.duration = 200 // Set the animation duration in milliseconds
 
         // Listen for animation completion
         animatorSet.addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator) {
                 Binding.publish.visibility = View.INVISIBLE
-
             }
             override fun onAnimationEnd(animation: Animator) {
-                // Animation is complete, you can perform additional actions if needed
+                val navController = requireActivity().findNavController(R.id.nav_host_fragment_activity_main)
+                navController.navigate(R.id.navigation_map)
             }
             override fun onAnimationCancel(animation: Animator) {}
             override fun onAnimationRepeat(animation: Animator) {}
