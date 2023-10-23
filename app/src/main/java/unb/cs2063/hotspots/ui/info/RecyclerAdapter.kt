@@ -5,6 +5,7 @@ import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
@@ -37,6 +38,26 @@ class RecyclerAdapter(private val parentActivity: Activity, private val mDataset
 
         holder.itemView.setOnClickListener{
             Log.i(TAG, "Clicked CardView")
+
+            val scale = 0.9f // The target scale
+            val duration = 100L // Animation duration in milliseconds
+
+            holder.itemView.animate()
+                .scaleX(scale)
+                .scaleY(scale)
+                .setDuration(duration)
+                .withEndAction {
+                    // Restore the original scale after the animation
+                    holder.itemView.animate()
+                        .scaleX(1.0f)
+                        .scaleY(1.0f)
+                        .setDuration(duration)
+                        .setInterpolator(AccelerateDecelerateInterpolator())
+                        .start()
+                }
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
+
             startDetailedRecyclerActivity(question)
         }
     }
