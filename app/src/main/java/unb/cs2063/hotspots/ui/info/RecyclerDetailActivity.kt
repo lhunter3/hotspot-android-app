@@ -23,8 +23,8 @@ class RecyclerDetailActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
-    override fun onPause() {
-        super.onPause()
+    override fun onBackPressed() {
+        super.onBackPressed()
         finish()
     }
 
