@@ -1,6 +1,7 @@
 package unb.cs2063.hotspots.ui.info
 
 import android.os.Bundle
+import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import unb.cs2063.hotspots.R
@@ -19,11 +20,21 @@ class RecyclerDetailActivity : AppCompatActivity() {
         textView.text = desc
 
         supportActionBar?.title = title
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
-    override fun onPause() {
-        super.onPause()
+    override fun onBackPressed() {
+        super.onBackPressed()
         finish()
+    }
+
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            onBackPressed()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
 }

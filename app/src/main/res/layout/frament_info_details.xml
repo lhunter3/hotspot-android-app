@@ -11,7 +11,6 @@
     tools:context="unb.cs2063.hotspots.ui.info.RecyclerDetailActivity">
 
 
-
     <TextView
         android:id="@+id/faqDetails_description"
         android:layout_width="wrap_content"

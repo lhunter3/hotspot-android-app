@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginBottom="55dp"
     tools:context=".ui.info.InfoFragment"
     android:gravity="top"
     android:orientation="vertical"
@@ -15,12 +16,22 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="591dp"
+        android:layout_height="563dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="parent"
         tools:listitem="@layout/recycler_view_item" />
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:backgroundTint="#66000000"
+        app:cardCornerRadius="10dp"
+        android:layout_marginHorizontal="100dp"
+        android:layout_marginTop="0dp"
+        />
+
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -28,27 +39,31 @@
         android:orientation="vertical"
         android:gravity="center_vertical">
 
+
         <TextView
+            style="@style/TextAppearance.AppCompat.Title"
             android:id="@+id/text_info"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
             android:textAlignment="center"
-            android:textAppearance="@style/TextAppearance.AppCompat.Menu"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:text="Did not find what you're looking for??"/>
 
         <Button
+            style="@style/Widget.MaterialComponents.Button"
+            android:backgroundTint="@color/button"
             android:id="@+id/btn_contact"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
-            android:layout_marginTop="10dp"
-            android:hint="Contact Us"/>
+            android:layout_marginTop="5dp"
+            android:text="Contact Us"/>
     </LinearLayout>
 
 
