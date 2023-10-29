@@ -26,7 +26,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var fusedLocationProviderClient : FusedLocationProviderClient
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val mapViewModel = ViewModelProvider(this).get(MapViewModel::class.java)
 
         //binding
         _binding = FragmentMapBinding.inflate(inflater, container, false)
