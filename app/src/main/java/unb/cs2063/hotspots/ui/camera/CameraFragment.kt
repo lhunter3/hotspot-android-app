@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
@@ -57,23 +58,23 @@ class CameraFragment : Fragment() {
         //Camera Setup
         setupCamera()
 
-        //take picture when button is clicked
+        //Take Picture
         Binding.captureButton.setOnClickListener{
-            takePhoto()
+            Binding.captureButton.startAnimation(shutterAnimation())
         }
 
+        //Exit Picture
+        Binding.exitImage.setOnClickListener {
+            Binding.exitImage.startAnimation(exitAnimation())
+        }
 
-        //Publish image to firebase ... animations, change to map once complete
+        //Publish Image to firebas
         Binding.publish.setOnClickListener{
             FireBaseUtil.pushToFireBase(requireActivity(),capturedImageUri)
+            Binding.exitImage.visibility = View.INVISIBLE
             Binding.publish.isClickable = false
             Binding.publish.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.button_disabled))
             Binding.progressBar.startAnimation(setupAnimations())
-        }
-
-
-        Binding.exitImage.setOnClickListener {
-            hideImage()
         }
 
         return root
@@ -221,39 +222,36 @@ class CameraFragment : Fragment() {
 
     }
 
-    fun animateButton(view: ImageButton, animationDuration: Long, onClickAction: () -> Unit) {
-        val animatorSet = AnimatorSet()
+    private fun shutterAnimation(): Animation{
 
-        // Scale down the button
-        val scaleXAnimator = ObjectAnimator.ofFloat(view, View.SCALE_X, 1f, 0.2f)
-        val scaleYAnimator = ObjectAnimator.ofFloat(view, View.SCALE_Y, 1f, 0.2f)
+        val animation = AnimationUtils.loadAnimation(requireContext(), R.anim.button_push_down)
 
-        // Combine scale animations
-        animatorSet.playTogether(scaleXAnimator, scaleYAnimator)
-        animatorSet.interpolator = DecelerateInterpolator()
-        animatorSet.duration = animationDuration
+        animation.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationStart(animation: Animation) {}
 
-        // Listen for animation completion
-        animatorSet.addListener(object : Animator.AnimatorListener {
-            override fun onAnimationStart(animation: Animator) {
-                // Animation start callback (optional)
+            override fun onAnimationEnd(animation: Animation) {
+                takePhoto()
             }
 
-            override fun onAnimationEnd(animation: Animator) {
-                // Animation end callback
-                //onClickAction()
-            }
-
-            override fun onAnimationCancel(animation: Animator) {
-                // Animation cancel callback (optional)
-            }
-
-            override fun onAnimationRepeat(animation: Animator) {
-                // Animation repeat callback (optional)
-            }
+            override fun onAnimationRepeat(animation: Animation) {}
         })
+        return animation
+    }
 
-        animatorSet.start()
+    private fun exitAnimation(): Animation{
+
+        val animation = AnimationUtils.loadAnimation(requireContext(), R.anim.button_push_down)
+
+        animation.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationStart(animation: Animation) {}
+
+            override fun onAnimationEnd(animation: Animation) {
+                hideImage()
+            }
+
+            override fun onAnimationRepeat(animation: Animation) {}
+        })
+        return animation
     }
 
     override fun onDestroyView() {

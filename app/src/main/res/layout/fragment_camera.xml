@@ -43,14 +43,13 @@
         tools:layout_editor_absoluteY="0dp"
         tools:src="@tools:sample/avatars" />
 
-    <ImageButton
-        android:id="@+id/exitImage"
-        android:layout_margin="10dp"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:scaleType="centerCrop"
-        android:background="@drawable/ic_action_name"
-        />
+        <ImageButton
+            android:id="@+id/exitImage"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="10dp"
+            android:background="@drawable/ic_action_name"
+            android:scaleType="centerCrop" />
 
     <Button
         style="@style/Widget.MaterialComponents.Button"

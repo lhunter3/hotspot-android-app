@@ -1,21 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Outer circle -->
     <item android:gravity="center">
         <shape
             android:shape="oval">
             <solid android:color="#00000000" /> <!-- Transparent fill -->
             <stroke
-                android:width="8dp"
+                android:width="6dp"
                 android:color="@color/black" /> <!-- Border color -->
-        </shape>
-    </item>
-
-    <!-- Inner circle (hole) -->
-    <item android:gravity="center">
-        <shape
-            android:shape="oval">
-            <solid android:color="#006B2DA3" /> <!-- Fill color (same as border color) -->
         </shape>
     </item>
 </layer-list>

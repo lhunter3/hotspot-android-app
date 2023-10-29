@@ -55,15 +55,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             googleMap.setOnMapClickListener { latLng ->
 
 
-                //start activity
+                //Image found when clicked map
                 val test = getPictureData(latLng,dataList)
-                Log.d(TAG,test.toString())
-
-                startImageActivity(test)
+                if(test.isNotEmpty()){
+                    startImageActivity(test)
+                }
 
             }
         }
-
 
 
         // Request location permissions if not granted
@@ -155,11 +154,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         googleMap.addTileOverlay(TileOverlayOptions().tileProvider(heatmapTileProvider))
     }
 
+
     private fun startImageActivity(userData: List<UserData>){
 
         val intent = Intent(requireActivity(), RecyclerDetailActivity::class.java)
-        //intent.putExtra("userDataList", ArrayList(userData))
-
+        //intent.putExtra("userDataList", userData[0] as Serializable)
         startActivity(intent)
 
     }
