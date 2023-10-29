@@ -15,7 +15,7 @@ import unb.cs2063.hotspots.model.Question
 
 class RecyclerAdapter(private val parentActivity: Activity, private val mDataset:ArrayList<Question>) : RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
 
-    private val TAG = "RecyclerAdapter"
+
     class ViewHolder(mTextView: CardView) : RecyclerView.ViewHolder(mTextView)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -71,6 +71,10 @@ class RecyclerAdapter(private val parentActivity: Activity, private val mDataset
 
         parentActivity.startActivity(intent)
 
+    }
+
+    companion object{
+        private const val TAG = "RecyclerAdapter"
     }
 
 }

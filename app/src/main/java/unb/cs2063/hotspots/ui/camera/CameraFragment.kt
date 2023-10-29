@@ -1,12 +1,9 @@
 package unb.cs2063.hotspots.ui.camera
 
-import android.Manifest
 import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.content.pm.PackageManager
 import android.content.res.ColorStateList
-import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -30,12 +27,9 @@ import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
-import com.google.android.gms.location.LocationServices
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
-import com.google.firebase.storage.FirebaseStorage
 import unb.cs2063.hotspots.R
 import unb.cs2063.hotspots.databinding.FragmentCameraBinding
+import unb.cs2063.hotspots.utils.FireBaseUtil
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -51,6 +45,7 @@ class CameraFragment : Fragment() {
     private lateinit var outputDirectory: File
     private var cameraProvider: ProcessCameraProvider? = null
     private var camera: Camera? = null
+    private var FireBaseUtil : FireBaseUtil = FireBaseUtil()
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -70,7 +65,7 @@ class CameraFragment : Fragment() {
 
         //Publish image to firebase ... animations, change to map once complete
         Binding.publish.setOnClickListener{
-            pushToFireBase(capturedImageUri)
+            FireBaseUtil.pushToFireBase(requireActivity(),capturedImageUri)
             Binding.publish.isClickable = false
             Binding.publish.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.button_disabled))
             Binding.progressBar.startAnimation(setupAnimations())
@@ -81,65 +76,9 @@ class CameraFragment : Fragment() {
             hideImage()
         }
 
-
         return root
     }
 
-    private fun pushToFireBase(uri: Uri) {
-        val storage = FirebaseStorage.getInstance()
-        val storageRef = storage.reference
-        val imagesRef = storageRef.child("images/${uri.lastPathSegment}")
-
-        val db = Firebase.firestore
-
-        imagesRef.putFile(uri)
-            .addOnSuccessListener { taskSnapshot ->
-                imagesRef.downloadUrl
-                    .addOnSuccessListener { uri ->
-                        val downloadUrl = uri.toString()
-
-                        if (checkLocationPermission()) {
-                            getLocation { location ->
-                                if (location != null) {
-                                    val data = mapOf(
-                                        "longitude" to location.longitude,
-                                        "latitude" to location.latitude,
-                                        "uri" to downloadUrl
-                                    )
-
-                                    db.collection("data")
-                                        .add(data)
-                                        .addOnSuccessListener {
-                                            Log.d(TAG, "${location.longitude}, ${location.latitude}, $downloadUrl successfully written!")
-                                        }
-                                        .addOnFailureListener { exception ->
-                                            Log.w(TAG, "Error writing document: ${exception.message}")
-                                        }
-                                }
-                            }
-                        }
-                    }
-                    .addOnFailureListener { exception ->
-                        Log.e(TAG, exception.message.toString())
-                    }
-            }
-            .addOnFailureListener { exception ->
-                Log.e(TAG, exception.message.toString())
-            }
-    }
-
-    private fun getLocation(callback: (Location?) -> Unit) {
-        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-        if(checkLocationPermission())
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener { location ->
-                callback(location)
-            }
-            .addOnFailureListener { exception ->
-                Log.w(TAG, "Error getting location: ${exception.message}")
-                callback(null)
-            }
-    }
 
     private fun setupCamera() {
         hideImage()
@@ -166,7 +105,6 @@ class CameraFragment : Fragment() {
         cameraProvider?.unbindAll()
         camera = cameraProvider?.bindToLifecycle(this, cameraSelector, preview, imageCapture)
     }
-
 
     private fun takePhoto() {
         val imageCapture = imageCapture
@@ -200,23 +138,10 @@ class CameraFragment : Fragment() {
             }
         }
 
-
     private fun getOutputDirectory(): File {
         val mediaStoreDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
         return File(mediaStoreDir, "HotSpots").apply { mkdirs() }
     }
-
-    private fun checkLocationPermission(): Boolean {
-            return (ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(
-                        requireContext(),
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED)
-    }
-
 
     //Does animations. Changes to Map page.
     private fun setupAnimations(): RotateAnimation{
