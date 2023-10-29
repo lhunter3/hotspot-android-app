@@ -31,14 +31,13 @@ class MainActivity : AppCompatActivity(){
         navView.setupWithNavController(navController)
 
 
-        if (allPermissionsGranted()) {
-        }
-        else{
+        if (!allPermissionsGranted()) {
             ActivityCompat.requestPermissions(this,
                 REQUIRED_PERMISSIONS,
                 REQUEST_CODE_PERMISSIONS
             )
         }
+
 
 
 
@@ -59,7 +58,6 @@ class MainActivity : AppCompatActivity(){
             android.Manifest.permission.ACCESS_FINE_LOCATION,
             android.Manifest.permission.ACCESS_COARSE_LOCATION
         )
-        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
     }
 
 }

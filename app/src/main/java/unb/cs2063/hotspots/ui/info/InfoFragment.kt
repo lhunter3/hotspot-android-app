@@ -32,6 +32,7 @@ class InfoFragment : Fragment() {
         binding = FragmentInfoBinding.inflate(inflater, container, false)
         val root: View = Binding.root
 
+
         //setup recyclerView
         val json = JsonUtils(requireContext())
         Binding.recyclerView.layoutManager = LinearLayoutManager(activity)
