@@ -1,10 +1,12 @@
 package unb.cs2063.hotspots.ui.camera
 
+import android.Manifest
 import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.ColorStateList
+import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -12,16 +14,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
-import android.view.animation.ScaleAnimation
-import android.widget.Button
 import android.widget.ImageButton
-import androidx.activity.result.ActivityResultLauncher
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -33,6 +30,10 @@ import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
+import com.google.android.gms.location.LocationServices
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.FirebaseStorage
 import unb.cs2063.hotspots.R
 import unb.cs2063.hotspots.databinding.FragmentCameraBinding
 import java.io.File
@@ -42,14 +43,10 @@ import java.util.Locale
 
 class CameraFragment : Fragment() {
 
-
-    private lateinit var cameraLauncher : ActivityResultLauncher<Intent>
-    private lateinit var capturedImageUri: Uri
-    private lateinit var  navController: NavController
-
     private var binding: FragmentCameraBinding? = null
     private val Binding get() = binding!!
-
+    private lateinit var capturedImageUri: Uri
+    private lateinit var  navController: NavController
     private lateinit var imageCapture: ImageCapture
     private lateinit var outputDirectory: File
     private var cameraProvider: ProcessCameraProvider? = null
@@ -61,7 +58,6 @@ class CameraFragment : Fragment() {
         navController = requireActivity().findNavController(R.id.nav_host_fragment_activity_main)
         val root: View = Binding.root
 
-        hideImage()
 
         //Camera Setup
         setupCamera()
@@ -71,8 +67,10 @@ class CameraFragment : Fragment() {
             takePhoto()
         }
 
-        //Publish image to firebase... animations, change to map once complete
+
+        //Publish image to firebase ... animations, change to map once complete
         Binding.publish.setOnClickListener{
+            pushToFireBase(capturedImageUri)
             Binding.publish.isClickable = false
             Binding.publish.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.button_disabled))
             Binding.progressBar.startAnimation(setupAnimations())
@@ -87,10 +85,67 @@ class CameraFragment : Fragment() {
         return root
     }
 
-    private fun setupCamera() {
-        outputDirectory = getOutputDirectory()
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
+    private fun pushToFireBase(uri: Uri) {
+        val storage = FirebaseStorage.getInstance()
+        val storageRef = storage.reference
+        val imagesRef = storageRef.child("images/${uri.lastPathSegment}")
 
+        val db = Firebase.firestore
+
+        imagesRef.putFile(uri)
+            .addOnSuccessListener { taskSnapshot ->
+                imagesRef.downloadUrl
+                    .addOnSuccessListener { uri ->
+                        val downloadUrl = uri.toString()
+
+                        if (checkLocationPermission()) {
+                            getLocation { location ->
+                                if (location != null) {
+                                    val data = mapOf(
+                                        "longitude" to location.longitude,
+                                        "latitude" to location.latitude,
+                                        "uri" to downloadUrl
+                                    )
+
+                                    db.collection("data")
+                                        .add(data)
+                                        .addOnSuccessListener {
+                                            Log.d(TAG, "${location.longitude}, ${location.latitude}, $downloadUrl successfully written!")
+                                        }
+                                        .addOnFailureListener { exception ->
+                                            Log.w(TAG, "Error writing document: ${exception.message}")
+                                        }
+                                }
+                            }
+                        }
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.e(TAG, exception.message.toString())
+                    }
+            }
+            .addOnFailureListener { exception ->
+                Log.e(TAG, exception.message.toString())
+            }
+    }
+
+    private fun getLocation(callback: (Location?) -> Unit) {
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        if(checkLocationPermission())
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { location ->
+                callback(location)
+            }
+            .addOnFailureListener { exception ->
+                Log.w(TAG, "Error getting location: ${exception.message}")
+                callback(null)
+            }
+    }
+
+    private fun setupCamera() {
+        hideImage()
+        outputDirectory = getOutputDirectory()
+
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
             bindCamera()
@@ -99,15 +154,19 @@ class CameraFragment : Fragment() {
 
     private fun bindCamera() {
         val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
         val preview = Preview.Builder().build()
+
         imageCapture = ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .build()
 
         preview.setSurfaceProvider(Binding.cameraPreview.surfaceProvider)
+
         cameraProvider?.unbindAll()
         camera = cameraProvider?.bindToLifecycle(this, cameraSelector, preview, imageCapture)
     }
+
 
     private fun takePhoto() {
         val imageCapture = imageCapture
@@ -123,61 +182,40 @@ class CameraFragment : Fragment() {
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(requireContext()),
-            object : ImageCapture.OnImageSavedCallback {
-                override fun onError(exc: ImageCaptureException) {
-                    Log.e(TAG, "Error: ${exc.message}")
-                }
-
-                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-
-                    hidePreview()
-
-                    Binding.imageView.setImageURI(photoFile.toUri())
-                    Log.i(TAG, photoFile.absolutePath)
-                    Log.i(TAG, "Image saved successfully")
-                }
-            }
+            onImageSavedCallback(photoFile)
         )
     }
 
+    private fun onImageSavedCallback(photoFile: File) =
+        object : ImageCapture.OnImageSavedCallback {
+            override fun onError(exc: ImageCaptureException) {
+                Log.e(TAG, "Error: ${exc.message}")
+            }
 
-    private fun hidePreview(){
+            override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                hidePreview()
+                capturedImageUri = photoFile.toUri()
+                Binding.imageView.setImageURI(capturedImageUri)
+                Log.i(TAG, "Image captured")
+            }
+        }
 
-        Binding.captureButton.visibility = View.INVISIBLE
-        Binding.cameraPreview.visibility = View.INVISIBLE
-        //container that has all the publish shit
-        Binding.imageContainer.visibility = View.VISIBLE
-
-    }
-
-    private fun hideImage(){
-        //container shit invisible
-        Binding.imageContainer.visibility = View.INVISIBLE
-        //preview visible
-        Binding.captureButton.visibility = View.VISIBLE
-        Binding.cameraPreview.visibility = View.VISIBLE
-
-    }
-
-
-    companion object {
-        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
-        private const val TAG = "CameraFragment"
-
-    }
 
     private fun getOutputDirectory(): File {
         val mediaStoreDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
         return File(mediaStoreDir, "HotSpots").apply { mkdirs() }
     }
 
-
-    //Gets the picture location to store on the heatmap
-    //Picture name should be exact location for simplicity of retreival
-    public fun getCurrentLocation(){
-        TODO()
+    private fun checkLocationPermission(): Boolean {
+            return (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(
+                        requireContext(),
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED)
     }
-
 
 
     //Does animations. Changes to Map page.
@@ -240,7 +278,23 @@ class CameraFragment : Fragment() {
         animatorSet.start()
     }
 
+    private fun hidePreview(){
 
+        Binding.captureButton.visibility = View.INVISIBLE
+        Binding.cameraPreview.visibility = View.INVISIBLE
+        //container that has all the publish shit
+        Binding.imageContainer.visibility = View.VISIBLE
+
+    }
+
+    private fun hideImage(){
+        //container shit invisible
+        Binding.imageContainer.visibility = View.INVISIBLE
+        //preview visible
+        Binding.captureButton.visibility = View.VISIBLE
+        Binding.cameraPreview.visibility = View.VISIBLE
+
+    }
 
     fun animateButton(view: ImageButton, animationDuration: Long, onClickAction: () -> Unit) {
         val animatorSet = AnimatorSet()
@@ -277,9 +331,14 @@ class CameraFragment : Fragment() {
         animatorSet.start()
     }
 
-
     override fun onDestroyView() {
         super.onDestroyView()
         binding = null
+    }
+
+    companion object {
+        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+        private const val TAG = "CameraFragment"
+
     }
 }

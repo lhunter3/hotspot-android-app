@@ -11,7 +11,6 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import unb.cs2063.hotspots.databinding.ActivityMainBinding
-import unb.cs2063.hotspots.ui.camera.CameraFragment
 
 class MainActivity : AppCompatActivity(){
 
@@ -19,6 +18,7 @@ class MainActivity : AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
 
         //nav bar setup
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -32,7 +32,6 @@ class MainActivity : AppCompatActivity(){
 
 
         if (allPermissionsGranted()) {
-
         }
         else{
             ActivityCompat.requestPermissions(this,
@@ -45,6 +44,7 @@ class MainActivity : AppCompatActivity(){
 
 
 
+
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity(){
     }
 
     companion object {
-        private const val REQUEST_CODE_PERMISSIONS = 10
+        private const val REQUEST_CODE_PERMISSIONS = 99
         private val REQUIRED_PERMISSIONS = arrayOf(
             android.Manifest.permission.CAMERA,
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
