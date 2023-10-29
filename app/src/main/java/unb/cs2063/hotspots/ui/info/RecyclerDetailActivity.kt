@@ -15,7 +15,6 @@ class RecyclerDetailActivity : AppCompatActivity() {
         val desc = intent.getStringExtra("description")
         val title = intent.getStringExtra("title")
 
-
         val textView = findViewById<TextView>(R.id.faqDetails_description)
         textView.text = desc
 

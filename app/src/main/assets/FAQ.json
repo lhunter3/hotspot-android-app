@@ -31,7 +31,16 @@
     {
       "TITLE": "How do I get started with your app?",
       "DESCRIPTION" : "To get started, simply download and install the app from the Google Play Store. Open the app, allow location access, and explore the events recommended in your area."
+    },
+    {
+      "TITLE": "How is user data protected in your app?",
+      "DESCRIPTION" : "User data privacy and security are paramount to us. We use encryption and follow best practices to safeguard your data."
+    },
+    {
+      "TITLE": "How do I get started with your app?",
+      "DESCRIPTION" : "To get started, simply download and install the app from the Google Play Store. Open the app, allow location access, and explore the events recommended in your area."
     }
+
 
   ]
 }
