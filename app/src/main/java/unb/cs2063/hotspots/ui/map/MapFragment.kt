@@ -19,6 +19,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.TileOverlayOptions
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import unb.cs2063.hotspots.R
@@ -48,8 +49,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
-        googleMap.mapType = GoogleMap.MAP_TYPE_TERRAIN
-
+        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.custom_map))
         FireBaseUtil.getFirestoreData("data") { dataList ->
             setHeatMap(googleMap,dataList)
             googleMap.setOnMapClickListener { latLng ->
@@ -73,6 +73,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         } else {
             // Enable the "My Location" button on the map
             googleMap.isMyLocationEnabled = true
+
+
             val locationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity())
             locationProviderClient.lastLocation.addOnSuccessListener { location: Location? ->
                 if (location != null) {
