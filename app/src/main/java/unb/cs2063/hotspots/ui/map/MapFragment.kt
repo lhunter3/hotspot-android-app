@@ -21,6 +21,8 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.TileOverlayOptions
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.android.heatmaps.Gradient
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import unb.cs2063.hotspots.R
@@ -36,13 +38,20 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val mapFragment = childFragmentManager.findFragmentById(R.id.mapView) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-
+        getAllDataFromFirestore("data") { dataList ->
+            // Handle the retrieved data (dataList) here
+            for (data in dataList) {
+                Log.d(TAG,data.toString())
+            }
+        }
 
         return view
     }
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
+
+        googleMap.mapType = GoogleMap.MAP_TYPE_TERRAIN
 
         // Request location permissions if not granted
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
@@ -118,6 +127,27 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val tileOverlay = googleMap.addTileOverlay(
             TileOverlayOptions().tileProvider(heatmapProvider)
         )
+    }
+
+    fun getAllDataFromFirestore(collectionName: String, callback: (List<UserData>) -> Unit) {
+        val firestore = FirebaseFirestore.getInstance()
+        val collection = firestore.collection(collectionName)
+
+        collection.get()
+            .addOnCompleteListener(OnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val resultList = ArrayList<UserData>()
+                    for (document in task.result) {
+                        // Convert Firestore document to your data model
+                        val yourData = document.toObject(UserData::class.java)
+                        resultList.add(yourData)
+                    }
+                    callback(resultList)
+                } else {
+                    // Handle the error
+                    callback(emptyList()) // or another suitable error handling
+                }
+            })
     }
 
     companion object {
