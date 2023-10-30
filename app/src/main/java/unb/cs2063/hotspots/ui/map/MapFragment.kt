@@ -51,17 +51,18 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         googleMap = map
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.custom_map))
         FireBaseUtil.getFirestoreData("data") { dataList ->
-            setHeatMap(googleMap,dataList)
-            googleMap.setOnMapClickListener { latLng ->
 
-
-                //Image found when clicked map
-                val test = getPictureData(latLng,dataList)
-                if(test.isNotEmpty()){
-                    startImageActivity(test)
+            if(dataList.isNotEmpty()){
+                setHeatMap(googleMap,dataList)
+                googleMap.setOnMapClickListener { latLng ->
+                    //Image found when clicked map
+                    val test = getPictureData(latLng,dataList)
+                    if(test.isNotEmpty()){
+                        startImageActivity(test as ArrayList<UserData>)
+                    }
                 }
-
             }
+
         }
 
 
@@ -107,7 +108,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val nearbyData = ArrayList<UserData>()
 
         for (userData in data) {
-            val userDataLatLng = LatLng(userData.latLong.latitude, userData.latLong.longitude)
+            val userDataLatLng = LatLng(userData.latitude, userData.longitude)
             val distance = calculateDistance(latLng, userDataLatLng)
             Log.d(TAG,distance.toString())
             // Check if the distance is within the threshold of 1.5km
@@ -141,7 +142,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         // Create a list of WeightedLatLng from your UserData objects
         val heatmapData = ArrayList<LatLng>()
         for(d in data){
-            heatmapData.add(LatLng(d.latLong.latitude,d.latLong.longitude))
+            Log.i(TAG, "worksing" + {d.latitude})
+            Log.i(TAG,d.latitude.toString())
+            heatmapData.add(LatLng(d.latitude,d.longitude))
         }
 
 
@@ -152,15 +155,18 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             .radius(30)
             .build()
 
+        Log.i(TAG,heatmapData.toString())
         // Add the heatmap layer to the map
         googleMap.addTileOverlay(TileOverlayOptions().tileProvider(heatmapTileProvider))
     }
 
 
-    private fun startImageActivity(userData: List<UserData>){
+    private fun startImageActivity(userData: ArrayList<UserData>){
 
-        val intent = Intent(requireActivity(), RecyclerDetailActivity::class.java)
-        //intent.putExtra("userDataList", userData[0] as Serializable)
+        val intent = Intent(requireActivity(), ImageActivity::class.java)
+
+        Log.d(TAG,userData.toString())
+        intent.putParcelableArrayListExtra("userDataList", userData)
         startActivity(intent)
 
     }

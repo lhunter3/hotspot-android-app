@@ -1,5 +1,6 @@
 package unb.cs2063.hotspots
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -37,12 +38,6 @@ class MainActivity : AppCompatActivity(){
                 REQUEST_CODE_PERMISSIONS
             )
         }
-
-
-
-
-
-
 
     }
 

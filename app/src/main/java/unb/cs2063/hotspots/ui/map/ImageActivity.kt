@@ -1,9 +1,13 @@
 package unb.cs2063.hotspots.ui.map
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
+import com.bumptech.glide.Glide
 import unb.cs2063.hotspots.R
+import unb.cs2063.hotspots.model.UserData
 
 class ImageActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -12,14 +16,19 @@ class ImageActivity : AppCompatActivity() {
         setContentView(R.layout.image_activity)
         val imageView = findViewById<ImageView>(R.id.imageView)
 
-        //val userDataList = intent.getSerializableExtra("userDataList") as List<UserData>
+        val userDataList = intent.getParcelableArrayListExtra<UserData>("userDataList")
 
-        //Log.d(TAG, userDataList.toString())
+        Glide.with(this)
+            .load(userDataList?.get(0)?.uri)
+            .into(imageView)
 
-        //if (userDataList != null) {
-        //    Log.d(TAG,"setting image")
-        //    imageView.setImageURI(userDataList.get(0).uri.toUri())
-        //}
+
+
+
+
+        Log.d(TAG,"test")
+        Log.d(TAG, userDataList.toString())
+
 
 
     }

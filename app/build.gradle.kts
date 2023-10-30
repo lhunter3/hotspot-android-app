@@ -68,6 +68,7 @@ dependencies {
     implementation ("com.google.android.material:material:1.10.0")
     implementation("androidx.cardview:cardview:1.0.0")
     implementation("com.google.maps.android:android-maps-utils:2.2.2")
+    implementation("com.github.bumptech.glide:glide:4.12.0")
 
 
 
