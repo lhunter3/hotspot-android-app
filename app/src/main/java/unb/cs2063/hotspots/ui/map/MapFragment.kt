@@ -19,6 +19,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.TileOverlayOptions
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import unb.cs2063.hotspots.R
@@ -48,22 +49,21 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
-        googleMap.mapType = GoogleMap.MAP_TYPE_TERRAIN
-
+        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.custom_map))
         FireBaseUtil.getFirestoreData("data") { dataList ->
-            setHeatMap(googleMap,dataList)
-            googleMap.setOnMapClickListener { latLng ->
 
-
-                //start activity
-                val test = getPictureData(latLng,dataList)
-                Log.d(TAG,test.toString())
-
-                startImageActivity(test)
-
+            if(dataList.isNotEmpty()){
+                setHeatMap(googleMap,dataList)
+                googleMap.setOnMapClickListener { latLng ->
+                    //Image found when clicked map
+                    val test = getPictureData(latLng,dataList)
+                    if(test.isNotEmpty()){
+                        startImageActivity(test as ArrayList<UserData>)
+                    }
+                }
             }
-        }
 
+        }
 
 
         // Request location permissions if not granted
@@ -74,6 +74,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         } else {
             // Enable the "My Location" button on the map
             googleMap.isMyLocationEnabled = true
+
+
             val locationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity())
             locationProviderClient.lastLocation.addOnSuccessListener { location: Location? ->
                 if (location != null) {
@@ -106,11 +108,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val nearbyData = ArrayList<UserData>()
 
         for (userData in data) {
-            val userDataLatLng = LatLng(userData.latLong.latitude, userData.latLong.longitude)
+            val userDataLatLng = LatLng(userData.latitude, userData.longitude)
             val distance = calculateDistance(latLng, userDataLatLng)
             Log.d(TAG,distance.toString())
             // Check if the distance is within the threshold of 1.5km
-            if (distance <= 1.5) {
+            if (distance <= 0.5) {
                 nearbyData.add(userData)
             }
         }
@@ -140,7 +142,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         // Create a list of WeightedLatLng from your UserData objects
         val heatmapData = ArrayList<LatLng>()
         for(d in data){
-            heatmapData.add(LatLng(d.latLong.latitude,d.latLong.longitude))
+            Log.i(TAG, "worksing" + {d.latitude})
+            Log.i(TAG,d.latitude.toString())
+            heatmapData.add(LatLng(d.latitude,d.longitude))
         }
 
 
@@ -151,22 +155,25 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             .radius(30)
             .build()
 
+        Log.i(TAG,heatmapData.toString())
         // Add the heatmap layer to the map
         googleMap.addTileOverlay(TileOverlayOptions().tileProvider(heatmapTileProvider))
     }
 
-    private fun startImageActivity(userData: List<UserData>){
 
-        val intent = Intent(requireActivity(), RecyclerDetailActivity::class.java)
-        //intent.putExtra("userDataList", ArrayList(userData))
+    private fun startImageActivity(userData: ArrayList<UserData>){
 
+        val intent = Intent(requireActivity(), ImageActivity::class.java)
+
+        Log.d(TAG,userData.toString())
+        intent.putParcelableArrayListExtra("userDataList", userData)
         startActivity(intent)
 
     }
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
-        private const val DEFAULT_ZOOM = 5.0f
+        private const val DEFAULT_ZOOM = 15.0f
         private const val YourDefaultLatitude = 47.23890841033145
         private const val YourDefaultLongitude = -68.16202752292156
         private const val TAG = "MapFragment"

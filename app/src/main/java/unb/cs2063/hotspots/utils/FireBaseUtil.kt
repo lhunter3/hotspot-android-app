@@ -12,35 +12,35 @@ import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.firestore.auth.User
 import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.getField
 import com.google.firebase.storage.FirebaseStorage
 import unb.cs2063.hotspots.model.UserData
 
 class FireBaseUtil {
 
-
-    public fun getFirestoreData(collectionName: String, callback: (List<UserData>) -> Unit) {
+    fun getFirestoreData(collectionName: String, callback: (List<UserData>) -> Unit) {
         val firestore = FirebaseFirestore.getInstance()
         val collection = firestore.collection(collectionName)
-
         collection.get()
             .addOnCompleteListener(OnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val resultList = ArrayList<UserData>()
                     for (document in task.result) {
-                        // Convert Firestore document to your data model
-                        val yourData = document.toObject(UserData::class.java)
-                        resultList.add(yourData)
+                        // Convert Firestore document to UserData
+                        val data = document.toObject(UserData::class.java)
+                        Log.i(TAG,data.toString())
+                        resultList.add(data)
                     }
                     callback(resultList)
                 } else {
-                    // Handle the error
-                    callback(emptyList()) // or another suitable error handling
+                    callback(emptyList())
                 }
             })
     }
 
-    public fun pushToFireBase(activity: Activity, uri: Uri) {
+    fun pushToFireBase(activity: Activity, uri: Uri) {
         val storage = FirebaseStorage.getInstance()
         val storageRef = storage.reference
         val imagesRef = storageRef.child("images/${uri.lastPathSegment}")
@@ -57,14 +57,17 @@ class FireBaseUtil {
                             getLocation(activity, { location ->
                                 if (location != null) {
                                     val data = mapOf(
-                                        "latLong" to GeoPoint(location.latitude, location.longitude),
-                                        "uri" to downloadUrl
+                                        "latitude" to location.latitude,
+                                        "longitude" to location.longitude,
+                                        "uri" to downloadUrl,
+                                        "likes" to 0,
+                                        "dislikes" to 0
                                     )
 
                                     db.collection("data")
                                         .add(data)
                                         .addOnSuccessListener {
-                                            Log.d(TAG, "${location.longitude}, ${location.latitude}, $downloadUrl successfully written!")
+                                            Log.d(TAG, "Pushed User Data: ${location.longitude}, ${location.latitude}, $downloadUrl successfully written!")
                                         }
                                         .addOnFailureListener { exception ->
                                             Log.w(TAG, "Error writing document: ${exception.message}")
