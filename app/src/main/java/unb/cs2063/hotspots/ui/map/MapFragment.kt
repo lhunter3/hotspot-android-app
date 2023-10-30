@@ -4,6 +4,7 @@ package unb.cs2063.hotspots.ui.map
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
@@ -21,12 +22,11 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.TileOverlayOptions
+import com.google.maps.android.heatmaps.Gradient
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import unb.cs2063.hotspots.R
 import unb.cs2063.hotspots.model.UserData
-import unb.cs2063.hotspots.ui.info.RecyclerDetailActivity
 import unb.cs2063.hotspots.utils.FireBaseUtil
-import java.io.Serializable
 import java.lang.Math.atan2
 import java.lang.Math.cos
 import java.lang.Math.sin
@@ -40,10 +40,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_map, container, false)
-
         val mapFragment = childFragmentManager.findFragmentById(R.id.mapView) as SupportMapFragment
         mapFragment.getMapAsync(this)
-
         return view
     }
 
@@ -53,37 +51,41 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         FireBaseUtil.getFirestoreData("data") { dataList ->
 
             if(dataList.isNotEmpty()){
+                //sets heatmap with firebase data
                 setHeatMap(googleMap,dataList)
+
+                //displays the correct images when heatmap is clicked.
                 googleMap.setOnMapClickListener { latLng ->
-                    //Image found when clicked map
-                    val test = getPictureData(latLng,dataList)
-                    if(test.isNotEmpty()){
-                        startImageActivity(test as ArrayList<UserData>)
-                    }
+                    displayImages(latLng,dataList)
                 }
             }
-
+            else{
+                Log.d(TAG,"Database has no entries. Heatmap cannot be set.")
+            }
         }
 
 
-        // Request location permissions if not granted
+        //Request location permissions if not granted
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(),
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
         } else {
-            // Enable the "My Location" button on the map
+
+            //Enable the location button on the map
             googleMap.isMyLocationEnabled = true
 
 
             val locationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity())
             locationProviderClient.lastLocation.addOnSuccessListener { location: Location? ->
+                //if location is found, move the camera to the location.
                 if (location != null) {
                     val userLocation = LatLng(location.latitude, location.longitude)
                     val initialLatLng = LatLng(userLocation.latitude, userLocation.longitude)
                     val cameraUpdate = CameraUpdateFactory.newLatLngZoom(initialLatLng, DEFAULT_ZOOM)
                     googleMap.moveCamera(cameraUpdate)
                 }
+                //for whatever reason the location is not found, move to the default position
                 else{
                     val initialLatLng = LatLng(YourDefaultLatitude, YourDefaultLongitude)
                     val cameraUpdate = CameraUpdateFactory.newLatLngZoom(initialLatLng, DEFAULT_ZOOM)
@@ -91,33 +93,39 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 }
             }
 
-            // Set up a camera move listener to detect camera position changes
-            googleMap.setOnCameraMoveListener {
-                // Get the updated camera position
-                val cameraPosition = googleMap.cameraPosition
-                val latitude = cameraPosition.target.latitude
-                val longitude = cameraPosition.target.longitude
 
-                Log.d(TAG, latitude.toString())
-                Log.d(TAG, longitude.toString())
-            }
         }
     }
 
-    private fun getPictureData(latLng: LatLng, data: List<UserData>): List<UserData> {
+
+    private fun displayImages(latLng: LatLng, data: List<UserData>){
         val nearbyData = ArrayList<UserData>()
 
-        for (userData in data) {
-            val userDataLatLng = LatLng(userData.latitude, userData.longitude)
-            val distance = calculateDistance(latLng, userDataLatLng)
-            Log.d(TAG,distance.toString())
-            // Check if the distance is within the threshold of 1.5km
-            if (distance <= 0.5) {
-                nearbyData.add(userData)
-            }
-        }
+            //gets all userData objects that are near (500m) the coords. Adds to object
+            for (userData in data) {
+                val userDataLatLng = LatLng(userData.latitude, userData.longitude)
+                val distance = calculateDistance(latLng, userDataLatLng)
+                if (distance <= 0.5){
+                    userData.distance = distance
+                    nearbyData.add(userData)
+                }
 
-        return nearbyData
+            }
+
+        //sort objects by distance. closest displays first..
+        nearbyData.sortBy { it.distance }
+
+        //starts the new activity
+        startImageActivity(nearbyData)
+
+    }
+
+    private fun startImageActivity(userData: ArrayList<UserData>){
+        //starts new activity passes the userData as extra
+        val intent = Intent(requireActivity(), ImageActivity::class.java)
+        Log.d(TAG,userData.toString())
+        intent.putParcelableArrayListExtra("userDataList", userData)
+        startActivity(intent)
     }
 
     private fun calculateDistance(latLng1: LatLng, latLng2: LatLng): Double {
@@ -139,36 +147,53 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun setHeatMap(googleMap: GoogleMap, data: List<UserData>) {
-        // Create a list of WeightedLatLng from your UserData objects
         val heatmapData = ArrayList<LatLng>()
+        //for all points in list, add to heatmap data.
         for(d in data){
-            Log.i(TAG, "worksing" + {d.latitude})
-            Log.i(TAG,d.latitude.toString())
             heatmapData.add(LatLng(d.latitude,d.longitude))
         }
 
+        //yellow -> Red (custom colors)
+        val gradientColors = intArrayOf(
+            Color.rgb(238,155,0),
+            Color.rgb(174, 32, 18)
+        )
+        //custom gradient using gradientColors
+        val gradient = Gradient(gradientColors, floatArrayOf(0.2f, 1.0f)) // Adjust the gradient as needed
 
-
-
+        //setting up the heatmap
         val heatmapTileProvider = HeatmapTileProvider.Builder()
             .data(heatmapData)
-            .radius(30)
+            .radius(50)
+            .gradient(gradient)
             .build()
 
-        Log.i(TAG,heatmapData.toString())
-        // Add the heatmap layer to the map
+        //adding heatmap overlay to the actual map
         googleMap.addTileOverlay(TileOverlayOptions().tileProvider(heatmapTileProvider))
+
+        //dynamicly updating radius based on zoom
+        googleMap.setOnCameraIdleListener {
+            val currentZoom = googleMap.cameraPosition.zoom
+            val newRadius = calculateNewRadius(currentZoom)
+            heatmapTileProvider.setRadius(newRadius)
+        }
+
     }
 
+    private fun calculateNewRadius(zoom: Float): Int {
+        //heatmap radius helper for dynamic scaling
+        val minZoom = 5.0f
+        val maxZoom = 15.0f
+        val minRadius = 20
+        val maxRadius = 50
 
-    private fun startImageActivity(userData: ArrayList<UserData>){
+        val zoomFraction = (zoom - minZoom) / (maxZoom - minZoom)
+        return (minRadius + zoomFraction * (maxRadius - minRadius)).toInt()
+    }
 
-        val intent = Intent(requireActivity(), ImageActivity::class.java)
-
-        Log.d(TAG,userData.toString())
-        intent.putParcelableArrayListExtra("userDataList", userData)
-        startActivity(intent)
-
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i(TAG,"destroyed map fragment")
     }
 
     companion object {
@@ -179,9 +204,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         private const val TAG = "MapFragment"
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
 
-    }
 }
 
