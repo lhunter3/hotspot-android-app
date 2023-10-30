@@ -196,6 +196,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         Log.i(TAG,"destroyed map fragment")
     }
 
+    override fun onPause() {
+        super.onPause()
+        Log.i(TAG,"paused map fragment")
+    }
+
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
         private const val DEFAULT_ZOOM = 15.0f
