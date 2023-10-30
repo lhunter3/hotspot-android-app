@@ -25,6 +25,8 @@ class ImageActivity : AppCompatActivity() {
         //setting the first image
         setImage(imageView, userDataList?.get(0) ?: UserData())
 
+        //we should display location, time of post aswell as the likes and dislikes. A fake report button or if likes<disliked dont show type beat.
+
 
         //setting up the swipe
         setupSwipeDetection(imageView, userDataList!!)
