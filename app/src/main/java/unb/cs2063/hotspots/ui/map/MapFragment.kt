@@ -112,7 +112,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             val distance = calculateDistance(latLng, userDataLatLng)
             Log.d(TAG,distance.toString())
             // Check if the distance is within the threshold of 1.5km
-            if (distance <= 1.5) {
+            if (distance <= 0.5) {
                 nearbyData.add(userData)
             }
         }
@@ -173,7 +173,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
-        private const val DEFAULT_ZOOM = 5.0f
+        private const val DEFAULT_ZOOM = 15.0f
         private const val YourDefaultLatitude = 47.23890841033145
         private const val YourDefaultLongitude = -68.16202752292156
         private const val TAG = "MapFragment"
