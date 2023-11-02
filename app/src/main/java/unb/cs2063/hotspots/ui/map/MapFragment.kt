@@ -21,6 +21,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.TileOverlay
 import com.google.android.gms.maps.model.TileOverlayOptions
 import com.google.maps.android.heatmaps.Gradient
 import com.google.maps.android.heatmaps.HeatmapTileProvider
@@ -116,7 +117,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         nearbyData.sortBy { it.distance }
 
         //starts the new activity
-        startImageActivity(nearbyData)
+        if(nearbyData.isNotEmpty())
+            startImageActivity(nearbyData)
 
     }
 
@@ -169,7 +171,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             .build()
 
         //adding heatmap overlay to the actual map
-        googleMap.addTileOverlay(TileOverlayOptions().tileProvider(heatmapTileProvider))
+        var heatmapOverlay = googleMap.addTileOverlay(TileOverlayOptions().tileProvider(heatmapTileProvider))
+        startBreathingAnimation(heatmapOverlay!!)
 
         //dynamicly updating radius based on zoom
         googleMap.setOnCameraIdleListener {
@@ -180,6 +183,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     }
 
+
     private fun calculateNewRadius(zoom: Float): Int {
         //heatmap radius helper for dynamic scaling
         val minZoom = 5.0f
@@ -189,6 +193,44 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         val zoomFraction = (zoom - minZoom) / (maxZoom - minZoom)
         return (minRadius + zoomFraction * (maxRadius - minRadius)).toInt()
+    }
+
+    private fun startBreathingAnimation(heatmapOverlay: TileOverlay) {
+        // Define the animation parameters
+        val minAlpha = 0.0f
+        val maxAlpha = 0.3f
+        val animationDuration = 100L
+        val handler = android.os.Handler()
+        var increasing = true
+        var currentAlpha = minAlpha
+
+        // Create a runnable to update heatmap intensity
+        val runnable = object : Runnable {
+            override fun run() {
+                if (increasing) {
+                    currentAlpha += 0.01f
+                    if (currentAlpha >= maxAlpha) {
+                        currentAlpha = maxAlpha
+                        increasing = false
+                    }
+                } else {
+                    currentAlpha -= 0.05f
+                    if (currentAlpha <= minAlpha) {
+                        currentAlpha = minAlpha
+                        increasing = true
+                    }
+                }
+
+                // Set the new alpha value for heatmap
+                heatmapOverlay?.setTransparency(currentAlpha)
+
+                // Repeat the animation by posting the runnable
+                handler.postDelayed(this, animationDuration)
+            }
+        }
+
+        // Start the animation
+        handler.post(runnable)
     }
 
     override fun onDestroy() {
