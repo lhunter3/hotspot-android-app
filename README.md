@@ -1,18 +1,27 @@
-# HotSpot - Android Map 
-A Android App  that allows users to track down, or share the hottest events of the evening. 
+# TODO
 
-## Setup and Installation
-To use the app, you will need to have Android Studio installed on your system.
+## Pictures
+- Like/dislike
+- location of image, how many minutes ago image was posted (ie dolans pub,  54 min ago)
+- image number on top right ie (1/32)
+- loading animation when we are waiting for the next image to load after a swipe action
+- a swipe to exit or support bar whatever is easiest.
+- report image (not required)
 
-1. Clone the repository to your local machine using the command: `git clone https://github.com/CS2063-Project/android-app.git`
+## Map 
+- testing + animations where applicable
+- preview fo image? (not required)
+- welcome message (tbt)
 
-2. Run on your machine
+## Share 
+- implement flip camera 
+- popup after publish has been clicked.
+- animation improvements
 
-## Usage
-Run on your machine
+## Info
+- buttons offscreen (relative view in fragment_info.xml not working properly)
+- actual faq questions (not the chatgpt bs that is there atm)
 
-## Contributing
-Create your own branch `git branch name-dev`. Tested changes will be merged into main.
 
-## License
-This project is licensed under the MIT License. See the LICENSE file for details.
+# Cross through elements when completed.
+
