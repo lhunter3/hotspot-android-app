@@ -33,6 +33,7 @@ import unb.cs2063.hotspots.utils.FireBaseUtil
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlin.random.Random
 
 
 class CameraFragment : Fragment() {
@@ -45,6 +46,7 @@ class CameraFragment : Fragment() {
     private lateinit var outputDirectory: File
     private var cameraProvider: ProcessCameraProvider? = null
     private var camera: Camera? = null
+    private var facingFront: Boolean = true
     private var FireBaseUtil : FireBaseUtil = FireBaseUtil()
 
 
@@ -67,10 +69,16 @@ class CameraFragment : Fragment() {
             Binding.exitImage.startAnimation(exitImageAnimation())
         }
 
+        //flip lens
+        Binding.flipCamera.setOnClickListener {
+            Binding.flipCamera.startAnimation(flipAnimation())
+        }
+
         //Publish Image to firebas
         Binding.publish.setOnClickListener{
             FireBaseUtil.pushToFireBase(requireActivity(),capturedImageUri)
             Binding.exitImage.visibility = View.INVISIBLE
+            Binding.flipCamera.visibility = View.INVISIBLE
             Binding.publish.isClickable = false
             Binding.publish.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.button_disabled))
             Binding.progressBar.startAnimation(publishImageAnimation())
@@ -78,6 +86,8 @@ class CameraFragment : Fragment() {
 
         return root
     }
+
+
 
 
     private fun setupCamera() {
@@ -92,7 +102,19 @@ class CameraFragment : Fragment() {
     }
 
     private fun bindCamera() {
-        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+        var cameraSelector: CameraSelector
+
+        if(facingFront){
+            Log.d(TAG,"switched to front")
+            cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+            facingFront = false
+        }
+        else{
+            Log.d(TAG,"switched to back")
+            cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            facingFront = true
+        }
+
 
         val preview = Preview.Builder().build()
 
@@ -105,6 +127,8 @@ class CameraFragment : Fragment() {
         cameraProvider?.unbindAll()
         camera = cameraProvider?.bindToLifecycle(this, cameraSelector, preview, imageCapture)
     }
+
+
 
     private fun captureImageAction() {
         val imageCapture = imageCapture
@@ -147,7 +171,7 @@ class CameraFragment : Fragment() {
     private fun publishImageAnimation(): RotateAnimation{
         val rotateAnimation = RotateAnimation(0f, 360f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
         rotateAnimation.interpolator = LinearInterpolator()
-        rotateAnimation.duration = 1000
+        rotateAnimation.duration = Random.nextLong(700,1300)
         rotateAnimation.repeatCount = 0
 
         rotateAnimation.setAnimationListener(object : Animation.AnimationListener {
@@ -166,6 +190,7 @@ class CameraFragment : Fragment() {
             override fun onAnimationRepeat(animation: Animation?) {
 
             }
+
         })
         return rotateAnimation
     }
@@ -191,11 +216,14 @@ class CameraFragment : Fragment() {
             override fun onAnimationStart(animation: Animator) {
                 Binding.publish.visibility = View.INVISIBLE
                 Binding.exitImage.visibility = View.INVISIBLE
+                Binding.flipCamera.visibility = View.INVISIBLE
             }
             override fun onAnimationEnd(animation: Animator) {
                 navController.navigate(R.id.navigation_map)
             }
-            override fun onAnimationCancel(animation: Animator) {}
+            override fun onAnimationCancel(animation: Animator) {
+
+            }
             override fun onAnimationRepeat(animation: Animator) {}
 
         })
@@ -228,6 +256,18 @@ class CameraFragment : Fragment() {
             override fun onAnimationStart(animation: Animation) {}
             override fun onAnimationEnd(animation: Animation) {
                 showCamera()
+            }
+            override fun onAnimationRepeat(animation: Animation) {}
+        })
+        return animation
+    }
+
+    private fun flipAnimation(): Animation? {
+        val animation = AnimationUtils.loadAnimation(requireContext(), R.anim.button_push_down)
+        animation.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationStart(animation: Animation) {}
+            override fun onAnimationEnd(animation: Animation) {
+                    bindCamera()
             }
             override fun onAnimationRepeat(animation: Animation) {}
         })
