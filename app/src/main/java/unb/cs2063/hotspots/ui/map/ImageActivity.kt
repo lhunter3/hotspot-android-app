@@ -69,11 +69,16 @@ class ImageActivity : AppCompatActivity() {
         }
     }
 
+    // all the work concerning with setting up the image should be done in here. setting like, dislike,location, timee it was posted.
     private fun setImage(imageView: ImageView, userData: UserData){
 
         currentUserData = userData
 
+
+
+
         //loads first image into view
+        //should setup a placeholder .placeholder(), while it is active hide the buttons, when it loads set the proper button info + show
         Glide.with(this)
             .load(userData.uri)
             .into(imageView)

@@ -13,6 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+
     <ImageButton
         android:id="@+id/captureButton"
         android:layout_width="75dp"
@@ -24,6 +25,17 @@
         android:scaleType="fitCenter"
         android:layout_marginBottom="16dp"/>
 
+
+    <ImageButton
+        android:id="@+id/flipCamera"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginVertical="10dp"
+        android:background="@drawable/flip_camera_icon"
+        android:scaleType="centerCrop"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"/>
 
     <RelativeLayout
         android:id="@+id/imageContainer"
@@ -47,9 +59,15 @@
             android:id="@+id/exitImage"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_margin="10dp"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginVertical="10dp"
             android:background="@drawable/ic_action_name"
-            android:scaleType="centerCrop" />
+            android:scaleType="centerCrop"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"/>
+
+
+
 
     <Button
         style="@style/Widget.MaterialComponents.Button"
@@ -59,8 +77,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginVertical="16dp"
         android:paddingHorizontal="32dp"
         android:text="Publish"
         />
