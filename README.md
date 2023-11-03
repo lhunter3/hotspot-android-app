@@ -12,11 +12,12 @@
 - testing + animations where applicable
 - preview fo image? (not required)
 - welcome message (tbt)
+- ~~heatmap breathing animation~~
 
 ## Share 
-- implement flip camera 
+- ~~implement flip camera~~
 - popup after publish has been clicked.
-- animation improvements
+- ~~animation improvements~~
 
 ## Info
 - buttons offscreen (relative view in fragment_info.xml not working properly)
