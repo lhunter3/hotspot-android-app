@@ -9,19 +9,19 @@
 - report image (not required)
 
 ## Map 
-- testing + animations where applicable
+- ~~testing + animations where applicable~~
 - preview fo image? (not required)
 - welcome message (tbt)
 - ~~heatmap breathing animation~~
 
 ## Share 
 - ~~implement flip camera~~
-- popup after publish has been clicked.
+- ~~popup after publish has been clicked.~~
 - ~~animation improvements~~
 
 ## Info
-- buttons offscreen (relative view in fragment_info.xml not working properly)
-- actual faq questions (not the chatgpt bs that is there atm)
+- ~~buttons offscreen (relative view in fragment_info.xml not working properly)~~
+- ~~actual faq questions (not the chatgpt bs that is there atm)~~
 
 
 # Cross through elements when completed.

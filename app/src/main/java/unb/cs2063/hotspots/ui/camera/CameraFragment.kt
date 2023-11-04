@@ -3,6 +3,8 @@ package unb.cs2063.hotspots.ui.camera
 import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.app.AlertDialog
+import android.content.Context
 import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
@@ -76,18 +78,40 @@ class CameraFragment : Fragment() {
 
         //Publish Image to firebas
         Binding.publish.setOnClickListener{
-            FireBaseUtil.pushToFireBase(requireActivity(),capturedImageUri)
-            Binding.exitImage.visibility = View.INVISIBLE
-            Binding.flipCamera.visibility = View.INVISIBLE
-            Binding.publish.isClickable = false
-            Binding.publish.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.button_disabled))
-            Binding.progressBar.startAnimation(publishImageAnimation())
+            showPopup(requireContext())
         }
 
         return root
     }
 
+    fun showPopup(context: Context) {
+        val alertDialog = AlertDialog.Builder(context).create()
 
+        alertDialog.setTitle("Attention")
+        alertDialog.setMessage("This image will be displayed on the public map at this current location for 24 hours. \nDo you wish to continue?")
+
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes") { dialog, _ ->
+            dialog.dismiss()
+            publishConfirmed()
+        }
+
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "No") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        alertDialog.show()
+    }
+
+
+    fun publishConfirmed(){
+
+        FireBaseUtil.pushToFireBase(requireActivity(),capturedImageUri)
+        Binding.exitImage.visibility = View.INVISIBLE
+        Binding.flipCamera.visibility = View.INVISIBLE
+        Binding.publish.isClickable = false
+        Binding.publish.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.button_disabled))
+        Binding.progressBar.startAnimation(publishImageAnimation())
+    }
 
 
     private fun setupCamera() {
