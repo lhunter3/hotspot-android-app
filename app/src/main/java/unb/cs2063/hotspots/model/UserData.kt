@@ -12,6 +12,7 @@ data class UserData(
     var distance: Double = 99.9
     //think about adding timestamp, could be used to check 24hr. also display how long ago image was posted (ie 55min ago..)
 ) : Parcelable {
+
     constructor(parcel: Parcel) : this(
         parcel.readDouble(),
         parcel.readDouble(),

@@ -4,7 +4,12 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
+import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import unb.cs2063.hotspots.R
@@ -13,6 +18,7 @@ import unb.cs2063.hotspots.model.UserData
 class ImageActivity : AppCompatActivity() {
 
     private lateinit var currentUserData : UserData
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.image_activity)
@@ -26,18 +32,56 @@ class ImageActivity : AppCompatActivity() {
         setImage(imageView, userDataList?.get(0) ?: UserData())
 
         //we should display location, time of post aswell as the likes and dislikes. A fake report button or if likes<disliked dont show type beat.
+        // Initialize like and dislike buttons
+        val likeButton = findViewById<Button>(R.id.likeButton)
+        val dislikeButton = findViewById<Button>(R.id.dislikeButton)
+        var likeCount = currentUserData.likes
+        var dislikeCount = currentUserData.dislikes
+        val likeText = findViewById<TextView>(R.id.likeCount)
+        val dislikeText = findViewById<TextView>(R.id.dislikeCount)
 
+        likeButton.setOnClickListener {
+            likeCount++
+            // Update the like count in the UserData object
+            currentUserData.likes = likeCount
+            // Update the UI with the new like count
+            likeText.text = likeCount.toString()
+        }
+
+        dislikeButton.setOnClickListener {
+            dislikeCount++
+            // Update the dislike count in the UserData object
+            currentUserData.dislikes = dislikeCount
+            // Update the UI with the new dislike count
+            dislikeText.text = dislikeCount.toString()
+        }
+
+        //setting up report button
+        val reportButton = findViewById<Button>(R.id.reportButton)
+        reportButton.setOnClickListener {
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Report Picture")
+
+            val input = EditText(this)
+            input.hint = "Enter your report here"
+            builder.setView(input)
+
+            // Set up the submit and cancel buttons
+            builder.setPositiveButton("Submit") { dialog, which ->
+                val reportText = input.text.toString()
+                Toast.makeText(this, "Report submitted: $reportText", Toast.LENGTH_SHORT).show()
+            }
+            builder.setNegativeButton("Cancel") { dialog, which -> dialog.cancel() }
+
+            builder.show()
+        }
 
         //setting up the swipe
         setupSwipeDetection(imageView, userDataList!!)
 
         userDataList.forEach{ Log.d(TAG, it.toString())}
 
-
-
-
     }
-
 
     // janky way but works.
     @SuppressLint("ClickableViewAccessibility")
