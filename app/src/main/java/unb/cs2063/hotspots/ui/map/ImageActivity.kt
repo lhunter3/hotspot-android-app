@@ -39,21 +39,31 @@ class ImageActivity : AppCompatActivity() {
         var dislikeCount = currentUserData.dislikes
         val likeText = findViewById<TextView>(R.id.likeCount)
         val dislikeText = findViewById<TextView>(R.id.dislikeCount)
+        val likedSet: MutableSet<String> = mutableSetOf()
+        val dislikedSet: MutableSet<String> = mutableSetOf()
 
         likeButton.setOnClickListener {
-            likeCount++
-            // Update the like count in the UserData object
-            currentUserData.likes = likeCount
-            // Update the UI with the new like count
-            likeText.text = likeCount.toString()
+            //checks if user has already liked or disliked
+            if(!likedSet.contains(currentUserData.id) && !dislikedSet.contains(currentUserData.id)) {
+                likedSet.add(currentUserData.id)
+                likeCount++
+                // Update the like count in the UserData object
+                currentUserData.likes = likeCount
+                // Update the UI with the new like count
+                likeText.text = likeCount.toString()
+            }
         }
 
         dislikeButton.setOnClickListener {
-            dislikeCount++
-            // Update the dislike count in the UserData object
-            currentUserData.dislikes = dislikeCount
-            // Update the UI with the new dislike count
-            dislikeText.text = dislikeCount.toString()
+            //checks if user has already liked or disliked
+            if(!likedSet.contains(currentUserData.id) && !dislikedSet.contains(currentUserData.id)) {
+                dislikedSet.add(currentUserData.id)
+                dislikeCount++
+                // Update the dislike count in the UserData object
+                currentUserData.likes = dislikeCount
+                // Update the UI with the new dislike count
+                dislikeText.text = dislikeCount.toString()
+            }
         }
 
         //setting up report button
@@ -69,7 +79,7 @@ class ImageActivity : AppCompatActivity() {
             // Set up the submit and cancel buttons
             builder.setPositiveButton("Submit") { dialog, which ->
                 val reportText = input.text.toString()
-                Toast.makeText(this, "Report submitted: $reportText", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Report submitted", Toast.LENGTH_SHORT).show()
             }
             builder.setNegativeButton("Cancel") { dialog, which -> dialog.cancel() }
 

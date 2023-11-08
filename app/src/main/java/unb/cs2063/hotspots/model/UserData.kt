@@ -2,8 +2,10 @@ package unb.cs2063.hotspots.model
 
 import android.os.Parcel
 import android.os.Parcelable
+import java.util.UUID
 
 data class UserData(
+    var id: String = UUID.randomUUID().toString(),
     var latitude: Double = 0.0,
     var longitude: Double = 0.0,
     var uri: String? = "",
@@ -14,6 +16,7 @@ data class UserData(
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
+        parcel.readString() ?: "",
         parcel.readDouble(),
         parcel.readDouble(),
         parcel.readString(),
@@ -25,6 +28,7 @@ data class UserData(
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(id)
         parcel.writeDouble(latitude)
         parcel.writeDouble(longitude)
         parcel.writeString(uri)
