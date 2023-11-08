@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -37,8 +38,8 @@ class ImageActivity : AppCompatActivity() {
         val dislikeButton = findViewById<Button>(R.id.dislikeButton)
         var likeCount = currentUserData.likes
         var dislikeCount = currentUserData.dislikes
-        val likeText = findViewById<TextView>(R.id.likeCount)
-        val dislikeText = findViewById<TextView>(R.id.dislikeCount)
+        val likeText = findViewById<Button>(R.id.likeButton)
+        val dislikeText = findViewById<TextView>(R.id.dislikeButton)
         val likedSet: MutableSet<String> = mutableSetOf()
         val dislikedSet: MutableSet<String> = mutableSetOf()
 
@@ -92,7 +93,7 @@ class ImageActivity : AppCompatActivity() {
         userDataList.forEach{ Log.d(TAG, it.toString())}
 
         //exit button
-        val exitButton = findViewById<Button>(R.id.exitButton)
+        val exitButton = findViewById<ImageButton>(R.id.exitButton)
         exitButton.setOnClickListener {
             finish()
         }
