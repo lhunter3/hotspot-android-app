@@ -91,6 +91,12 @@ class ImageActivity : AppCompatActivity() {
 
         userDataList.forEach{ Log.d(TAG, it.toString())}
 
+        //exit button
+        val exitButton = findViewById<Button>(R.id.exitButton)
+        exitButton.setOnClickListener {
+            finish()
+        }
+
     }
 
     // janky way but works.
@@ -137,9 +143,6 @@ class ImageActivity : AppCompatActivity() {
             .load(userData.uri)
             .into(imageView)
 
-        //set like count and dislike count
-        //TODO
-
     }
 
     private fun performSwipeBackAction(imageView: ImageView, userDataList: ArrayList<UserData>){
@@ -158,8 +161,10 @@ class ImageActivity : AppCompatActivity() {
         }
     }
 
-
-
+    private fun performDiagonalSwipeAction() {
+        //exit swipe
+        finish()
+    }
     companion object{
         const val TAG = "ImageActivity"
         const val SWIPE_THRESHOLD = 100 // Adjust this threshold as needed
