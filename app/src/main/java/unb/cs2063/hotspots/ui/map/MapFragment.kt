@@ -198,7 +198,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun startBreathingAnimation(heatmapOverlay: TileOverlay) {
         // Define the animation parameters
         val minAlpha = 0.0f
-        val maxAlpha = 0.3f
+        val maxAlpha = 0.4f
         val animationDuration = 100L
         val handler = android.os.Handler()
         var increasing = true
@@ -241,6 +241,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onPause() {
         super.onPause()
         Log.i(TAG,"paused map fragment")
+    }
+
+    override fun onResume() {
+        super.onResume()
     }
 
     companion object {

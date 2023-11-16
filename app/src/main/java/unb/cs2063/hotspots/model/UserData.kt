@@ -53,10 +53,10 @@ data class UserData(
         val days = hours / 24
 
         return when {
-            days > 0 -> "$days days ago"
-            hours > 0 -> "$hours hours ago"
-            minutes > 0 -> "$minutes minutes ago"
-            else -> "Just now"
+            days > 0 -> "$days Days Ago"
+            hours > 0 -> "$hours Hours Ago"
+            minutes > 0 -> "$minutes Minutes Ago"
+            else -> "Just Now"
         }
     }
 

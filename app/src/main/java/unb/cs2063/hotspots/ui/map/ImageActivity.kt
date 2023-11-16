@@ -3,6 +3,8 @@ package unb.cs2063.hotspots.ui.map
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.MotionEvent
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -34,6 +36,9 @@ class ImageActivity : AppCompatActivity() {
         val likedSet: MutableSet<String> = mutableSetOf()
         val dislikedSet: MutableSet<String> = mutableSetOf()
 
+        val buttonPushDownAnimation = AnimationUtils.loadAnimation(this, R.anim.like_button_animation)
+        val shakeAnimation = AnimationUtils.loadAnimation(this, R.anim.shake_like_button_animation)
+
         supportActionBar?.hide()
 
         //getting userDataList
@@ -45,22 +50,47 @@ class ImageActivity : AppCompatActivity() {
         likeButton.setOnClickListener {
             //checks if user has already liked or disliked
             if(!likedSet.contains(currentUserData.id) && !dislikedSet.contains(currentUserData.id)) {
-                likedSet.add(currentUserData.id)
-                currentUserData.likes +=1
-                likeButton.text = currentUserData.likes.toString()
-                firebase.updateUserData(currentUserData)
+                likeButton.startAnimation(buttonPushDownAnimation)
+                likeButton.animation.setAnimationListener(object : Animation.AnimationListener {
+                    override fun onAnimationStart(p0: Animation?) {
+
+                    }
+                    override fun onAnimationRepeat(p0: Animation?) {}
+                    override fun onAnimationEnd(animation: Animation) {
+                        likedSet.add(currentUserData.id)
+                        currentUserData.likes +=1
+                        likeButton.text = currentUserData.likes.toString()
+                        firebase.updateUserData(currentUserData)
+                    }
+                })
+
+            }
+            else{
+                likeButton.startAnimation(shakeAnimation)
             }
         }
 
         dislikeButton.setOnClickListener {
             //checks if user has already liked or disliked
-            if(!likedSet.contains(currentUserData.id) && !dislikedSet.contains(currentUserData.id)) {
-                dislikedSet.add(currentUserData.id)
-                currentUserData.dislikes += 1
-                dislikeButton.text = currentUserData.dislikes.toString()
-                firebase.updateUserData(currentUserData)
+            if (!likedSet.contains(currentUserData.id) && !dislikedSet.contains(currentUserData.id)) {
+                dislikeButton.startAnimation(buttonPushDownAnimation)
+                dislikeButton.animation.setAnimationListener(object : Animation.AnimationListener {
+                    override fun onAnimationStart(p0: Animation?) {}
+                    override fun onAnimationRepeat(p0: Animation?) {}
+                    override fun onAnimationEnd(animation: Animation) {
+                        dislikedSet.add(currentUserData.id)
+                        currentUserData.dislikes += 1
+                        dislikeButton.text = currentUserData.dislikes.toString()
+                        firebase.updateUserData(currentUserData)
+                    }
+                })
+            }
+            else{
+                dislikeButton.startAnimation(shakeAnimation)
             }
         }
+
+
 
         //setting up report button
         reportButton.setOnClickListener {
@@ -81,8 +111,16 @@ class ImageActivity : AppCompatActivity() {
 
         //exit button
         exitButton.setOnClickListener {
-            finish()
+            exitButton.startAnimation(buttonPushDownAnimation)
+            exitButton.animation.setAnimationListener(object : Animation.AnimationListener {
+                override fun onAnimationStart(p0: Animation?) {}
+                override fun onAnimationRepeat(p0: Animation?) {}
+                override fun onAnimationEnd(animation: Animation) {
+                    finish()
+                }
+            })
         }
+
         //setting up the swipe
         setupSwipeDetection(imageView, userDataList)
 
@@ -132,6 +170,7 @@ class ImageActivity : AppCompatActivity() {
             .load(userData.uri)
             .into(imageView)
 
+
     }
 
     private fun performSwipeBackAction(imageView: ImageView, userDataList: ArrayList<UserData>){
@@ -153,7 +192,7 @@ class ImageActivity : AppCompatActivity() {
 
     companion object{
         const val TAG = "ImageActivity"
-        const val SWIPE_THRESHOLD = 100 // Adjust this threshold as needed
+        const val SWIPE_THRESHOLD = 100
         var x1: Float = 0f
         var x2: Float = 0f
     }
