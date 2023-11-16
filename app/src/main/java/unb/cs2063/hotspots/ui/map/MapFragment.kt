@@ -37,7 +37,7 @@ import kotlin.math.pow
 class MapFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var googleMap: GoogleMap
-    private var FireBaseUtil : FireBaseUtil = FireBaseUtil()
+    private var firebase : FireBaseUtil = FireBaseUtil()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_map, container, false)
@@ -49,7 +49,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.custom_map))
-        FireBaseUtil.getFirestoreData("data") { dataList ->
+        firebase.getUserData() { dataList ->
 
             if(dataList.isNotEmpty()){
                 //sets heatmap with firebase data
@@ -171,7 +171,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             .build()
 
         //adding heatmap overlay to the actual map
-        var heatmapOverlay = googleMap.addTileOverlay(TileOverlayOptions().tileProvider(heatmapTileProvider))
+        val heatmapOverlay = googleMap.addTileOverlay(TileOverlayOptions().tileProvider(heatmapTileProvider))
         startBreathingAnimation(heatmapOverlay!!)
 
         //dynamicly updating radius based on zoom
@@ -222,7 +222,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 }
 
                 // Set the new alpha value for heatmap
-                heatmapOverlay?.setTransparency(currentAlpha)
+                heatmapOverlay.setTransparency(currentAlpha)
 
                 // Repeat the animation by posting the runnable
                 handler.postDelayed(this, animationDuration)

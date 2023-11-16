@@ -2,7 +2,6 @@ package unb.cs2063.hotspots.ui.map
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.view.MotionEvent
 import android.widget.Button
 import android.widget.EditText
@@ -15,43 +14,41 @@ import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import unb.cs2063.hotspots.R
 import unb.cs2063.hotspots.model.UserData
+import unb.cs2063.hotspots.utils.FireBaseUtil
 
 class ImageActivity : AppCompatActivity() {
 
     private lateinit var currentUserData : UserData
+    private lateinit var userDataList : ArrayList<UserData>
+    private var firebase : FireBaseUtil = FireBaseUtil()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.image_activity)
+
         val imageView = findViewById<ImageView>(R.id.imageView)
-
-        supportActionBar?.hide()
-        //getting userDataList
-        val userDataList = intent.getParcelableArrayListExtra<UserData>("userDataList")
-
-        //setting the first image
-        setImage(imageView, userDataList?.get(0) ?: UserData())
-
-        //we should display location, time of post aswell as the likes and dislikes. A fake report button or if likes<disliked dont show type beat.
-        // Initialize like and dislike buttons
         val likeButton = findViewById<Button>(R.id.likeButton)
         val dislikeButton = findViewById<Button>(R.id.dislikeButton)
-        var likeCount = currentUserData.likes
-        var dislikeCount = currentUserData.dislikes
-        val likeText = findViewById<Button>(R.id.likeButton)
-        val dislikeText = findViewById<TextView>(R.id.dislikeButton)
+        val reportButton = findViewById<Button>(R.id.reportButton)
+        val exitButton = findViewById<ImageButton>(R.id.exitButton)
         val likedSet: MutableSet<String> = mutableSetOf()
         val dislikedSet: MutableSet<String> = mutableSetOf()
+
+        supportActionBar?.hide()
+
+        //getting userDataList
+         userDataList = intent.getParcelableArrayListExtra<UserData>("userDataList")!!
+
+        //setting the first image
+        setImage(imageView, userDataList[0])
 
         likeButton.setOnClickListener {
             //checks if user has already liked or disliked
             if(!likedSet.contains(currentUserData.id) && !dislikedSet.contains(currentUserData.id)) {
                 likedSet.add(currentUserData.id)
-                likeCount++
-                // Update the like count in the UserData object
-                currentUserData.likes = likeCount
-                // Update the UI with the new like count
-                likeText.text = likeCount.toString()
+                currentUserData.likes +=1
+                likeButton.text = currentUserData.likes.toString()
+                firebase.updateUserData(currentUserData)
             }
         }
 
@@ -59,16 +56,13 @@ class ImageActivity : AppCompatActivity() {
             //checks if user has already liked or disliked
             if(!likedSet.contains(currentUserData.id) && !dislikedSet.contains(currentUserData.id)) {
                 dislikedSet.add(currentUserData.id)
-                dislikeCount++
-                // Update the dislike count in the UserData object
-                currentUserData.likes = dislikeCount
-                // Update the UI with the new dislike count
-                dislikeText.text = dislikeCount.toString()
+                currentUserData.dislikes += 1
+                dislikeButton.text = currentUserData.dislikes.toString()
+                firebase.updateUserData(currentUserData)
             }
         }
 
         //setting up report button
-        val reportButton = findViewById<Button>(R.id.reportButton)
         reportButton.setOnClickListener {
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Report Picture")
@@ -79,24 +73,18 @@ class ImageActivity : AppCompatActivity() {
 
             // Set up the submit and cancel buttons
             builder.setPositiveButton("Submit") { dialog, which ->
-                val reportText = input.text.toString()
                 Toast.makeText(this, "Report submitted", Toast.LENGTH_SHORT).show()
             }
             builder.setNegativeButton("Cancel") { dialog, which -> dialog.cancel() }
-
             builder.show()
         }
 
-        //setting up the swipe
-        setupSwipeDetection(imageView, userDataList!!)
-
-        userDataList.forEach{ Log.d(TAG, it.toString())}
-
         //exit button
-        val exitButton = findViewById<ImageButton>(R.id.exitButton)
         exitButton.setOnClickListener {
             finish()
         }
+        //setting up the swipe
+        setupSwipeDetection(imageView, userDataList)
 
     }
 
@@ -130,16 +118,16 @@ class ImageActivity : AppCompatActivity() {
         }
     }
 
-    // all the work concerning with setting up the image should be done in here. setting like, dislike,location, timee it was posted.
     private fun setImage(imageView: ImageView, userData: UserData){
-
         currentUserData = userData
+        findViewById<Button>(R.id.likeButton).text = currentUserData.likes.toString()
+        findViewById<Button>(R.id.dislikeButton).text = currentUserData.dislikes.toString()
+        findViewById<TextView>(R.id.timeAgo).text = currentUserData.getTimeAgo()
 
-
-
+        val n = userDataList.indexOf(userData) + 1
+        findViewById<TextView>(R.id.imageCounter).text = "$n/${userDataList.size}"
 
         //loads first image into view
-        //should setup a placeholder .placeholder(), while it is active hide the buttons, when it loads set the proper button info + show
         Glide.with(this)
             .load(userData.uri)
             .into(imageView)
@@ -162,10 +150,7 @@ class ImageActivity : AppCompatActivity() {
         }
     }
 
-    private fun performDiagonalSwipeAction() {
-        //exit swipe
-        finish()
-    }
+
     companion object{
         const val TAG = "ImageActivity"
         const val SWIPE_THRESHOLD = 100 // Adjust this threshold as needed

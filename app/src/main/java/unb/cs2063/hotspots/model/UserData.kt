@@ -11,8 +11,9 @@ data class UserData(
     var uri: String? = "",
     var likes: Int = 0,
     var dislikes: Int = 0,
-    var distance: Double = 99.9
-    //think about adding timestamp, could be used to check 24hr. also display how long ago image was posted (ie 55min ago..)
+    var distance: Double = 99.9,
+    var uploadDate: Long = 0
+
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
@@ -22,8 +23,8 @@ data class UserData(
         parcel.readString(),
         parcel.readInt(),
         parcel.readInt(),
-        parcel.readDouble()
-
+        parcel.readDouble(),
+        parcel.readLong()
     ) {
     }
 
@@ -35,10 +36,28 @@ data class UserData(
         parcel.writeInt(likes)
         parcel.writeInt(dislikes)
         parcel.writeDouble(distance)
+        parcel.writeLong(uploadDate)
     }
 
     override fun describeContents(): Int {
         return 0
+    }
+
+    fun getTimeAgo() : String{
+
+        val ts = System.currentTimeMillis() - this.uploadDate
+
+        val seconds = ts / 1000
+        val minutes = seconds / 60
+        val hours = minutes / 60
+        val days = hours / 24
+
+        return when {
+            days > 0 -> "$days days ago"
+            hours > 0 -> "$hours hours ago"
+            minutes > 0 -> "$minutes minutes ago"
+            else -> "Just now"
+        }
     }
 
     companion object CREATOR : Parcelable.Creator<UserData> {
