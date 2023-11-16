@@ -105,7 +105,7 @@ class CameraFragment : Fragment() {
 
     fun publishConfirmed(){
 
-        FireBaseUtil.pushToFireBase(requireActivity(),capturedImageUri)
+        FireBaseUtil.pushUserData(requireActivity(),capturedImageUri)
         Binding.exitImage.visibility = View.INVISIBLE
         Binding.flipCamera.visibility = View.INVISIBLE
         Binding.publish.isClickable = false
@@ -126,7 +126,7 @@ class CameraFragment : Fragment() {
     }
 
     private fun bindCamera() {
-        var cameraSelector: CameraSelector
+        val cameraSelector: CameraSelector
 
         if(facingFront){
             Log.d(TAG,"switched to front")

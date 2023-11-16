@@ -9,26 +9,45 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.GeoPoint
-import com.google.firebase.firestore.auth.User
-import com.google.firebase.firestore.firestore
-import com.google.firebase.firestore.getField
 import com.google.firebase.storage.FirebaseStorage
 import unb.cs2063.hotspots.model.UserData
 
 class FireBaseUtil {
 
-    fun getFirestoreData(collectionName: String, callback: (List<UserData>) -> Unit) {
-        val firestore = FirebaseFirestore.getInstance()
-        val collection = firestore.collection(collectionName)
+    private val storage = FirebaseFirestore.getInstance()
+    private val collection = storage.collection(collectionName)
+
+    fun updateUserData(userData: UserData) {
+
+        //finding the image in collection.
+        val query = collection.whereEqualTo("uri", userData.uri)
+
+        //updating image stats.
+        query.get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                for (document in task.result) {
+                    document.reference.update(
+                        "likes", userData.likes,
+                        "dislikes", userData.dislikes
+                    ).addOnSuccessListener {
+                       Log.i(TAG, "Updated image stats")
+                    }.addOnFailureListener { e ->
+                        Log.e(TAG, "Error updating image stats", e)
+                    }
+                }
+            }
+        }
+    }
+
+    fun getUserData(callback: (List<UserData>) -> Unit) {
+
         collection.get()
             .addOnCompleteListener(OnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val resultList = ArrayList<UserData>()
                     for (document in task.result) {
-                        // Convert Firestore document to UserData
+                        //convert document to userdata
                         val data = document.toObject(UserData::class.java)
                         Log.i(TAG,data.toString())
                         resultList.add(data)
@@ -40,12 +59,9 @@ class FireBaseUtil {
             })
     }
 
-    fun pushToFireBase(activity: Activity, uri: Uri) {
+    fun pushUserData(activity: Activity, uri: Uri) {
         val storage = FirebaseStorage.getInstance()
-        val storageRef = storage.reference
-        val imagesRef = storageRef.child("images/${uri.lastPathSegment}")
-
-        val db = Firebase.firestore
+        val imagesRef = storage.reference.child("images/${uri.lastPathSegment}")
 
         imagesRef.putFile(uri)
             .addOnSuccessListener { taskSnapshot ->
@@ -61,10 +77,11 @@ class FireBaseUtil {
                                         "longitude" to location.longitude,
                                         "uri" to downloadUrl,
                                         "likes" to 0,
-                                        "dislikes" to 0
+                                        "dislikes" to 0,
+                                        "uploadDate" to System.currentTimeMillis()
                                     )
 
-                                    db.collection("data")
+                                    collection
                                         .add(data)
                                         .addOnSuccessListener {
                                             Log.d(TAG, "Pushed User Data: ${location.longitude}, ${location.latitude}, $downloadUrl successfully written!")
@@ -110,6 +127,7 @@ class FireBaseUtil {
 
     companion object{
         private const val TAG = "FireBaseUtil"
+        private const val collectionName = "data"
     }
 
 }

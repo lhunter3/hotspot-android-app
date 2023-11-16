@@ -2,42 +2,129 @@ package unb.cs2063.hotspots.ui.map
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.view.MotionEvent
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import unb.cs2063.hotspots.R
 import unb.cs2063.hotspots.model.UserData
+import unb.cs2063.hotspots.utils.FireBaseUtil
 
 class ImageActivity : AppCompatActivity() {
 
     private lateinit var currentUserData : UserData
+    private lateinit var userDataList : ArrayList<UserData>
+    private var firebase : FireBaseUtil = FireBaseUtil()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.image_activity)
+
         val imageView = findViewById<ImageView>(R.id.imageView)
+        val likeButton = findViewById<Button>(R.id.likeButton)
+        val dislikeButton = findViewById<Button>(R.id.dislikeButton)
+        val reportButton = findViewById<Button>(R.id.reportButton)
+        val exitButton = findViewById<ImageButton>(R.id.exitButton)
+        val likedSet: MutableSet<String> = mutableSetOf()
+        val dislikedSet: MutableSet<String> = mutableSetOf()
+
+        val buttonPushDownAnimation = AnimationUtils.loadAnimation(this, R.anim.like_button_animation)
+        val shakeAnimation = AnimationUtils.loadAnimation(this, R.anim.shake_like_button_animation)
 
         supportActionBar?.hide()
+
         //getting userDataList
-        val userDataList = intent.getParcelableArrayListExtra<UserData>("userDataList")
+         userDataList = intent.getParcelableArrayListExtra<UserData>("userDataList")!!
 
         //setting the first image
-        setImage(imageView, userDataList?.get(0) ?: UserData())
+        setImage(imageView, userDataList[0])
 
-        //we should display location, time of post aswell as the likes and dislikes. A fake report button or if likes<disliked dont show type beat.
+        likeButton.setOnClickListener {
+            //checks if user has already liked or disliked
+            if(!likedSet.contains(currentUserData.id) && !dislikedSet.contains(currentUserData.id)) {
+                likeButton.startAnimation(buttonPushDownAnimation)
+                likeButton.animation.setAnimationListener(object : Animation.AnimationListener {
+                    override fun onAnimationStart(p0: Animation?) {
 
+                    }
+                    override fun onAnimationRepeat(p0: Animation?) {}
+                    override fun onAnimationEnd(animation: Animation) {
+                        likedSet.add(currentUserData.id)
+                        currentUserData.likes +=1
+                        likeButton.text = currentUserData.likes.toString()
+                        firebase.updateUserData(currentUserData)
+                    }
+                })
+
+            }
+            else{
+                likeButton.startAnimation(shakeAnimation)
+            }
+        }
+
+        dislikeButton.setOnClickListener {
+            //checks if user has already liked or disliked
+            if (!likedSet.contains(currentUserData.id) && !dislikedSet.contains(currentUserData.id)) {
+                dislikeButton.startAnimation(buttonPushDownAnimation)
+                dislikeButton.animation.setAnimationListener(object : Animation.AnimationListener {
+                    override fun onAnimationStart(p0: Animation?) {}
+                    override fun onAnimationRepeat(p0: Animation?) {}
+                    override fun onAnimationEnd(animation: Animation) {
+                        dislikedSet.add(currentUserData.id)
+                        currentUserData.dislikes += 1
+                        dislikeButton.text = currentUserData.dislikes.toString()
+                        firebase.updateUserData(currentUserData)
+                    }
+                })
+            }
+            else{
+                dislikeButton.startAnimation(shakeAnimation)
+            }
+        }
+
+
+
+        //setting up report button
+        reportButton.setOnClickListener {
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Report Picture")
+
+            val input = EditText(this)
+            input.hint = "Enter your report here"
+            builder.setView(input)
+
+            // Set up the submit and cancel buttons
+            builder.setPositiveButton("Submit") { dialog, which ->
+                Toast.makeText(this, "Report submitted", Toast.LENGTH_SHORT).show()
+            }
+            builder.setNegativeButton("Cancel") { dialog, which -> dialog.cancel() }
+            builder.show()
+        }
+
+        //exit button
+        exitButton.setOnClickListener {
+            exitButton.startAnimation(buttonPushDownAnimation)
+            exitButton.animation.setAnimationListener(object : Animation.AnimationListener {
+                override fun onAnimationStart(p0: Animation?) {}
+                override fun onAnimationRepeat(p0: Animation?) {}
+                override fun onAnimationEnd(animation: Animation) {
+                    finish()
+                }
+            })
+        }
 
         //setting up the swipe
-        setupSwipeDetection(imageView, userDataList!!)
-
-        userDataList.forEach{ Log.d(TAG, it.toString())}
-
-
-
+        setupSwipeDetection(imageView, userDataList)
 
     }
-
 
     // janky way but works.
     @SuppressLint("ClickableViewAccessibility")
@@ -69,22 +156,20 @@ class ImageActivity : AppCompatActivity() {
         }
     }
 
-    // all the work concerning with setting up the image should be done in here. setting like, dislike,location, timee it was posted.
     private fun setImage(imageView: ImageView, userData: UserData){
-
         currentUserData = userData
+        findViewById<Button>(R.id.likeButton).text = currentUserData.likes.toString()
+        findViewById<Button>(R.id.dislikeButton).text = currentUserData.dislikes.toString()
+        findViewById<TextView>(R.id.timeAgo).text = currentUserData.getTimeAgo()
 
-
-
+        val n = userDataList.indexOf(userData) + 1
+        findViewById<TextView>(R.id.imageCounter).text = "$n/${userDataList.size}"
 
         //loads first image into view
-        //should setup a placeholder .placeholder(), while it is active hide the buttons, when it loads set the proper button info + show
         Glide.with(this)
             .load(userData.uri)
             .into(imageView)
 
-        //set like count and dislike count
-        //TODO
 
     }
 
@@ -105,10 +190,9 @@ class ImageActivity : AppCompatActivity() {
     }
 
 
-
     companion object{
         const val TAG = "ImageActivity"
-        const val SWIPE_THRESHOLD = 100 // Adjust this threshold as needed
+        const val SWIPE_THRESHOLD = 100
         var x1: Float = 0f
         var x2: Float = 0f
     }
