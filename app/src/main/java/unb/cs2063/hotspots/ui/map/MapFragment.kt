@@ -244,6 +244,23 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     override fun onResume() {
+
+
+        firebase.getUserData() { dataList ->
+            if(dataList.isNotEmpty()){
+                //sets heatmap with firebase data
+                setHeatMap(googleMap,dataList)
+
+                //displays the correct images when heatmap is clicked.
+                googleMap.setOnMapClickListener { latLng ->
+                    displayImages(latLng,dataList)
+                }
+            }
+            else{
+                Log.d(TAG,"Database has no entries. Heatmap cannot be set.")
+            }
+        }
+
         super.onResume()
     }
 
