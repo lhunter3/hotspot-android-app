@@ -55,7 +55,7 @@ class InfoFragment : Fragment() {
     /*
     Creates an email intent.
      */
-    fun composeEmail(addresses: Array<String>, subject: String) {
+    private fun composeEmail(addresses: Array<String>, subject: String) {
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "*/*"
             putExtra(Intent.EXTRA_EMAIL, addresses)
