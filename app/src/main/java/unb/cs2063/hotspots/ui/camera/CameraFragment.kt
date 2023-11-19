@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.app.AlertDialog
-import android.content.Context
 import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
@@ -45,11 +44,11 @@ class CameraFragment : Fragment() {
     private lateinit var capturedImageUri: Uri
     private lateinit var  navController: NavController
     private lateinit var imageCapture: ImageCapture
-    private lateinit var outputDirectory: File
+    private lateinit var tempOutputFile: File
     private var cameraProvider: ProcessCameraProvider? = null
     private var camera: Camera? = null
     private var facingFront: Boolean = true
-    private var FireBaseUtil : FireBaseUtil = FireBaseUtil()
+    private var firebaseUtil : FireBaseUtil = FireBaseUtil()
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -59,33 +58,64 @@ class CameraFragment : Fragment() {
 
 
         //Camera Setup
-        setupCamera()
+        initializeCamera()
+
+        //Button Animation
+        val buttonPushDownAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.like_button_animation)
 
         //Take Picture
-        Binding.captureButton.setOnClickListener{
-            Binding.captureButton.startAnimation(shutterImageAnimation())
+        Binding.captureButton.setOnClickListener {
+            Binding.captureButton.startAnimation(buttonPushDownAnimation)
+            Binding.captureButton.animation.setAnimationListener(object : Animation.AnimationListener {
+                override fun onAnimationStart(p0: Animation?) {
+
+                }
+                override fun onAnimationRepeat(p0: Animation?) {}
+                override fun onAnimationEnd(animation: Animation) {
+                    captureImageAction()
+                }
+            })
         }
+
 
         //Exit Picture
         Binding.exitImage.setOnClickListener {
-            Binding.exitImage.startAnimation(exitImageAnimation())
+            Binding.exitImage.startAnimation(buttonPushDownAnimation)
+            Binding.exitImage.animation.setAnimationListener(object :Animation.AnimationListener{
+                override fun onAnimationStart(p0: Animation?) {}
+                override fun onAnimationRepeat(p0: Animation?) {}
+                override fun onAnimationEnd(animation: Animation) {
+                    Binding.imageContainer.visibility = View.INVISIBLE
+                    Binding.captureButton.visibility = View.VISIBLE
+                    Binding.cameraPreview.visibility = View.VISIBLE
+                }
+            })
         }
 
-        //flip lens
+        //Flip lens
         Binding.flipCamera.setOnClickListener {
-            Binding.flipCamera.startAnimation(flipAnimation())
+            Binding.flipCamera.startAnimation(buttonPushDownAnimation)
+            Binding.flipCamera.animation.setAnimationListener(object : Animation.AnimationListener{
+                override fun onAnimationStart(p0: Animation?) {
+                }
+                override fun onAnimationRepeat(p0: Animation?) {}
+                override fun onAnimationEnd(animation: Animation) {
+                    bindCamera()
+                }
+
+            })
         }
 
-        //Publish Image to firebas
+        //Publish Image
         Binding.publish.setOnClickListener{
-            showPopup(requireContext())
+            displayPopupConfirmation()
         }
 
         return root
     }
 
-    fun showPopup(context: Context) {
-        val alertDialog = AlertDialog.Builder(context).create()
+    private fun displayPopupConfirmation() {
+        val alertDialog = AlertDialog.Builder(requireContext()).create()
 
         alertDialog.setTitle("Attention")
         alertDialog.setMessage("This image will be displayed on the public map at this current location for 24 hours. \nDo you wish to continue?")
@@ -101,22 +131,43 @@ class CameraFragment : Fragment() {
 
         alertDialog.show()
     }
+    private fun publishConfirmed(){
 
+        firebaseUtil.pushUserData(requireActivity(),capturedImageUri)
 
-    fun publishConfirmed(){
-
-        FireBaseUtil.pushUserData(requireActivity(),capturedImageUri)
         Binding.exitImage.visibility = View.INVISIBLE
         Binding.flipCamera.visibility = View.INVISIBLE
         Binding.publish.isClickable = false
+
         Binding.publish.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.button_disabled))
-        Binding.progressBar.startAnimation(publishImageAnimation())
+
+        val spinnerAnimation = RotateAnimation(0f, 360f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
+        spinnerAnimation.interpolator = LinearInterpolator()
+        spinnerAnimation.duration = Random.nextLong(700,1300)
+        spinnerAnimation.repeatCount = 0
+
+        Binding.progressBar.startAnimation(spinnerAnimation)
+        Binding.progressBar.animation.setAnimationListener(object: Animation.AnimationListener{
+            override fun onAnimationStart(animation: Animation?) {
+                Binding.progressBar.visibility = View.VISIBLE
+            }
+            override fun onAnimationEnd(animation: Animation?) {
+                Binding.progressBar.clearAnimation()
+                Binding.progressBar.visibility = View.INVISIBLE
+                publishAnimation(Binding.imageView)
+            }
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+        })
     }
+    private fun initializeCamera() {
 
+        //changing vis of certain items.
+        Binding.imageContainer.visibility = View.INVISIBLE
+        Binding.captureButton.visibility = View.VISIBLE
+        Binding.cameraPreview.visibility = View.VISIBLE
 
-    private fun setupCamera() {
-        showCamera()
-        outputDirectory = getOutputDirectory()
+        tempOutputFile = getTempOutputFile()
 
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
         cameraProviderFuture.addListener({
@@ -124,7 +175,6 @@ class CameraFragment : Fragment() {
             bindCamera()
         }, ContextCompat.getMainExecutor(requireContext()))
     }
-
     private fun bindCamera() {
         val cameraSelector: CameraSelector
 
@@ -139,7 +189,6 @@ class CameraFragment : Fragment() {
             facingFront = true
         }
 
-
         val preview = Preview.Builder().build()
 
         imageCapture = ImageCapture.Builder()
@@ -151,74 +200,45 @@ class CameraFragment : Fragment() {
         cameraProvider?.unbindAll()
         camera = cameraProvider?.bindToLifecycle(this, cameraSelector, preview, imageCapture)
     }
-
-
-
     private fun captureImageAction() {
         val imageCapture = imageCapture
 
-        val photoFile = File(
-            outputDirectory,
+        val imageOutputFile = File(
+            tempOutputFile,
             SimpleDateFormat(FILENAME_FORMAT, Locale.US)
                 .format(System.currentTimeMillis()) + ".jpg"
         )
 
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(imageOutputFile).build()
 
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(requireContext()),
-            onImageSavedCallback(photoFile)
+            onImageSavedCallback(imageOutputFile)
         )
     }
-
     private fun onImageSavedCallback(photoFile: File) =
         object : ImageCapture.OnImageSavedCallback {
-            override fun onError(exc: ImageCaptureException) {
-                Log.e(TAG, "Error: ${exc.message}")
+            override fun onError(e: ImageCaptureException) {
+                Log.e(TAG, e.printStackTrace().toString())
             }
 
             override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                showPublish()
+
+                Binding.captureButton.visibility = View.INVISIBLE
+                Binding.cameraPreview.visibility = View.INVISIBLE
+                Binding.imageContainer.visibility = View.VISIBLE
+
                 capturedImageUri = photoFile.toUri()
                 Binding.imageView.setImageURI(capturedImageUri)
-                Log.i(TAG, "Image captured")
+
+                Log.d(TAG, "Image captured")
             }
         }
-
-    private fun getOutputDirectory(): File {
+    private fun getTempOutputFile(): File {
         val mediaStoreDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
         return File(mediaStoreDir, "HotSpots").apply { mkdirs() }
     }
-
-    //when publish button button clicked  do animation + perform needed actions to upload + change back to map
-    private fun publishImageAnimation(): RotateAnimation{
-        val rotateAnimation = RotateAnimation(0f, 360f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
-        rotateAnimation.interpolator = LinearInterpolator()
-        rotateAnimation.duration = Random.nextLong(700,1300)
-        rotateAnimation.repeatCount = 0
-
-        rotateAnimation.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationStart(animation: Animation?) {
-                Binding.progressBar.visibility = View.VISIBLE
-
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                Binding.progressBar.clearAnimation()
-                Binding.progressBar.visibility = View.INVISIBLE
-                publishAnimation(Binding.imageView)
-
-            }
-
-            override fun onAnimationRepeat(animation: Animation?) {
-
-            }
-
-        })
-        return rotateAnimation
-    }
-
     private fun publishAnimation(view: View) {
         val animatorSet = AnimatorSet()
 
@@ -233,7 +253,7 @@ class CameraFragment : Fragment() {
         // Combine animations
         animatorSet.playTogether(scaleXAnimator, scaleYAnimator, translationXAnimator, translationYAnimator)
         animatorSet.interpolator = DecelerateInterpolator()
-        animatorSet.duration = 200 // Set the animation duration in milliseconds
+        animatorSet.duration = 200
 
         // Listen for animation completion
         animatorSet.addListener(object : Animator.AnimatorListener {
@@ -249,76 +269,9 @@ class CameraFragment : Fragment() {
 
             }
             override fun onAnimationRepeat(animation: Animator) {}
-
         })
-
         animatorSet.start()
     }
-
-    //when circle shutter button clicked (center) do animation + perform needed actions to display taken picture and the steps following.
-    private fun shutterImageAnimation(): Animation{
-
-        val animation = AnimationUtils.loadAnimation(requireContext(), R.anim.button_push_down)
-
-        animation.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationStart(animation: Animation) {}
-
-            override fun onAnimationEnd(animation: Animation) {
-                captureImageAction()
-            }
-
-            override fun onAnimationRepeat(animation: Animation) {}
-        })
-        return animation
-    }
-
-    //when x button clicked (top right) do animation + perform needed actions to get camera back.
-    private fun exitImageAnimation(): Animation{
-
-        val animation = AnimationUtils.loadAnimation(requireContext(), R.anim.button_push_down)
-        animation.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationStart(animation: Animation) {}
-            override fun onAnimationEnd(animation: Animation) {
-                showCamera()
-            }
-            override fun onAnimationRepeat(animation: Animation) {}
-        })
-        return animation
-    }
-
-    private fun flipAnimation(): Animation? {
-        val animation = AnimationUtils.loadAnimation(requireContext(), R.anim.button_push_down)
-        animation.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationStart(animation: Animation) {}
-            override fun onAnimationEnd(animation: Animation) {
-                    bindCamera()
-            }
-            override fun onAnimationRepeat(animation: Animation) {}
-        })
-        return animation
-    }
-
-    //hide the camera stuff, show the publish items
-    private fun showPublish(){
-
-        Binding.captureButton.visibility = View.INVISIBLE
-        Binding.cameraPreview.visibility = View.INVISIBLE
-        //container that has all the publish shit
-        Binding.imageContainer.visibility = View.VISIBLE
-
-    }
-
-    //hide the publish stuff, show the camera stuff
-    private fun showCamera(){
-        //container shit invisible
-        Binding.imageContainer.visibility = View.INVISIBLE
-        //preview visible
-        Binding.captureButton.visibility = View.VISIBLE
-        Binding.cameraPreview.visibility = View.VISIBLE
-
-    }
-
-
     override fun onDestroyView() {
         super.onDestroyView()
         binding = null
