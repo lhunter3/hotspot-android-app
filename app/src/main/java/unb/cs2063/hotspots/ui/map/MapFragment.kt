@@ -266,7 +266,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
-        private const val DEFAULT_ZOOM = 15.0f
+        private const val DEFAULT_ZOOM = 11.0f
         private const val YourDefaultLatitude = 47.23890841033145
         private const val YourDefaultLongitude = -68.16202752292156
         private const val TAG = "MapFragment"
