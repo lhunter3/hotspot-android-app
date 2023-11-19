@@ -199,7 +199,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         // Define the animation parameters
         val minAlpha = 0.0f
         val maxAlpha = 0.4f
-        val animationDuration = 100L
+        val animationDuration = 50L
         val handler = android.os.Handler()
         var increasing = true
         var currentAlpha = minAlpha
