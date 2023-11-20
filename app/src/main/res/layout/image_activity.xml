@@ -62,9 +62,20 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"/>
 
+    <FrameLayout
+        android:id="@+id/loadingLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/grey"
+        android:visibility="gone">
 
-
-
+        <ImageView
+            android:id="@+id/loadingAnimation"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            android:src="@drawable/spinner"/>
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
