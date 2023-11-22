@@ -7,6 +7,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import android.view.animation.RotateAnimation
 import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
@@ -187,6 +188,9 @@ class ImageActivity : AppCompatActivity() {
         val loadingLayout = findViewById<FrameLayout>(R.id.loadingLayout)
         loadingLayout.visibility = View.VISIBLE
 
+        //Rotates loading icon
+        startRotationAnimation()
+
         // Load the image into the view
         Glide.with(this)
             .load(userData.uri)
@@ -232,6 +236,15 @@ class ImageActivity : AppCompatActivity() {
         if(index < userDataList.size-1){
             setImage(imageView, userDataList[index+1])
         }
+    }
+
+    //used for loading animation, rotates loading icon
+    private fun startRotationAnimation() {
+        val rotatingImageView = findViewById<ImageView>(R.id.rotatingImageView)
+        val rotateAnimation = RotateAnimation(0f, 360f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
+        rotateAnimation.duration = 2000
+        rotateAnimation.repeatCount = Animation.INFINITE
+        rotatingImageView.startAnimation(rotateAnimation)
     }
 
 
