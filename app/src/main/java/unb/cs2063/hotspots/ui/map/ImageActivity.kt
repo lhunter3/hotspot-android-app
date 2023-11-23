@@ -1,12 +1,16 @@
 package unb.cs2063.hotspots.ui.map
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.MotionEvent
+import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import android.view.animation.RotateAnimation
 import android.widget.Button
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -14,6 +18,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.Target
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
 import unb.cs2063.hotspots.R
 import unb.cs2063.hotspots.model.UserData
 import unb.cs2063.hotspots.utils.FireBaseUtil
@@ -48,8 +56,13 @@ class ImageActivity : AppCompatActivity() {
         setImage(imageView, userDataList[0])
 
         likeButton.setOnClickListener {
-            //checks if user has already liked or disliked
-            if(!likedSet.contains(currentUserData.id) && !dislikedSet.contains(currentUserData.id)) {
+            if(dislikedSet.contains(currentUserData.id)){
+                dislikedSet.remove(currentUserData.id)
+                currentUserData.dislikes -= 1
+                dislikeButton.text = currentUserData.dislikes.toString()
+            }
+            //checks if user has already liked
+            if(!likedSet.contains(currentUserData.id)) {
                 likeButton.startAnimation(buttonPushDownAnimation)
                 likeButton.animation.setAnimationListener(object : Animation.AnimationListener {
                     override fun onAnimationStart(p0: Animation?) {
@@ -71,8 +84,14 @@ class ImageActivity : AppCompatActivity() {
         }
 
         dislikeButton.setOnClickListener {
-            //checks if user has already liked or disliked
-            if (!likedSet.contains(currentUserData.id) && !dislikedSet.contains(currentUserData.id)) {
+            //checks if user already liked
+            if (likedSet.contains(currentUserData.id)) {
+                likedSet.remove(currentUserData.id)
+                currentUserData.likes -= 1
+                likeButton.text = currentUserData.likes.toString()
+            }
+            //checks if user has already disliked
+            if (!dislikedSet.contains(currentUserData.id)) {
                 dislikeButton.startAnimation(buttonPushDownAnimation)
                 dislikeButton.animation.setAnimationListener(object : Animation.AnimationListener {
                     override fun onAnimationStart(p0: Animation?) {}
@@ -156,7 +175,7 @@ class ImageActivity : AppCompatActivity() {
         }
     }
 
-    private fun setImage(imageView: ImageView, userData: UserData){
+    private fun setImage(imageView: ImageView, userData: UserData) {
         currentUserData = userData
         findViewById<Button>(R.id.likeButton).text = currentUserData.likes.toString()
         findViewById<Button>(R.id.dislikeButton).text = currentUserData.dislikes.toString()
@@ -165,12 +184,42 @@ class ImageActivity : AppCompatActivity() {
         val n = userDataList.indexOf(userData) + 1
         findViewById<TextView>(R.id.imageCounter).text = "$n/${userDataList.size}"
 
-        //loads first image into view
+        // Show the loading layout while the image is loading
+        val loadingLayout = findViewById<FrameLayout>(R.id.loadingLayout)
+        loadingLayout.visibility = View.VISIBLE
+
+        //Rotates loading icon
+        startRotationAnimation()
+
+        // Load the image into the view
         Glide.with(this)
             .load(userData.uri)
+            .listener(object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: Target<Drawable>?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    // Hide the loading layout on failure
+                    loadingLayout.visibility = View.GONE
+                    return false
+                }
+
+                override fun onResourceReady(
+                    resource: Drawable?,
+                    model: Any?,
+                    target: Target<Drawable>?,
+                    dataSource: DataSource?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    // Image loaded successfully
+                    // Hide the loading layout
+                    loadingLayout.visibility = View.GONE
+                    return false
+                }
+            })
             .into(imageView)
-
-
     }
 
     private fun performSwipeBackAction(imageView: ImageView, userDataList: ArrayList<UserData>){
@@ -187,6 +236,15 @@ class ImageActivity : AppCompatActivity() {
         if(index < userDataList.size-1){
             setImage(imageView, userDataList[index+1])
         }
+    }
+
+    //used for loading animation, rotates loading icon
+    private fun startRotationAnimation() {
+        val rotatingImageView = findViewById<ImageView>(R.id.rotatingImageView)
+        val rotateAnimation = RotateAnimation(0f, 360f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
+        rotateAnimation.duration = 2000
+        rotateAnimation.repeatCount = Animation.INFINITE
+        rotatingImageView.startAnimation(rotateAnimation)
     }
 
 
