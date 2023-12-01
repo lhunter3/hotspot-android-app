@@ -1,28 +1,27 @@
-# TODO
+# Hotspots
 
-## Pictures
-- ~~Like/dislike(going to try to make it so can unlike or undislike when pressing reclicking respective button)~~
-- location of image, ~~how many minutes ago image was posted~~ (ie dolans pub,  54 min ago)
-- ~~image number on top right ie (1/32)~~
-- ~~loading animation when we are waiting for the next image to load after a swipe action~~
-- ~~a swipe to exit or support bar whatever is easiest.~~
-- ~~report image (not required)~~
+This Android app leverages Firebase and the Google Maps API to provide users with a easy experience in discovering popular locations through interactive heatmaps.
 
-## Map 
-- ~~testing + animations where applicable~~
-- ~~preview fo image? (not required)~~
-- ~~welcome message (tbt)~~
-- ~~heatmap breathing animation~~
+## Features
 
-## Share 
-- ~~implement flip camera~~
-- ~~popup after publish has been clicked.~~
-- ~~animation improvements~~
+- **Location Discovery:** Find popular locations thanks to user posts and data visualization using google maps api.
+  
+- **Sharing:** Publish images to the heatmap.
 
-## Info
-- ~~buttons offscreen (relative view in fragment_info.xml not working properly)~~
-- ~~actual faq questions (not the chatgpt bs that is there atm)~~
+- **Viewing:** Cycle through user posted images by clicking on a hotspot
 
+- **Ratings:** When viewing posts, you can like/dislike, or report users posts.
 
-# Cross through elements when completed.
+- **Firebase Integration:**  Real-time data synchronization and cloud storage using Firebase.
+  
+- **Google Maps API:** Explore world with the help of Google Maps. Interact with posts on the heatmap.
 
+## Getting Started
+
+Clone/Download zip, run in android studio. All API keys are included and pre-configured for easy usage. DO NOT SHARE these keys.
+
+## Issues
+No known bugs.
+
+## License
+This project is licensed under the MIT License. 
