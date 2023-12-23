@@ -3,7 +3,7 @@
     <string name="title_camera">Share</string>
     <string name="title_map">Map</string>
     <string name="title_info">Frequently Asked Questions</string>
-    <string name="api_key">AIzaSyAtRRtKI_cf6l7AUiZ_gdlo82vqcNCtVhs</string>
+    <string name="api_key">GOOGLE MAPS API GOES HERE</string>
     <string name="contact_us_title">Didn\'t find what you\'re looking for?</string>
     <string name="btn_contact_us">Contact Us</string>
     <string name="contact_email">support@hotspots.com</string>
